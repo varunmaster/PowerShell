@@ -1,0 +1,22 @@
+Here is the disk(s) info:
+Wednesday, January 24, 2018 2:37:44 PM
+
+
+
+Number Friendly Name Serial Number                    HealthStatus         OperationalStatus      Total Size Partition 
+                                                                                                             Style     
+------ ------------- -------------                    ------------         -----------------      ---------- ----------
+0      Samsung SS... 0025_3855_71B1_6083.             Healthy              Online                  232.89 GB GPT       
+
+
+
+Friday, February 2, 2018 9:45:35 AM
+
+
+
+Number Friendly Name Serial Number                    HealthStatus         OperationalStatus      Total Size Partition 
+                                                                                                             Style     
+------ ------------- -------------                    ------------         -----------------      ---------- ----------
+0      Samsung SS... 0025_3855_71B1_6083.             Healthy              Online                  232.89 GB GPT       
+
+

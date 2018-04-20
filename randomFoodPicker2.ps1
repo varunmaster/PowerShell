@@ -16,4 +16,4 @@ Write-Host $foodArray
 
 Read-Host -Prompt 'Press enter key to close this box'
 
-C:\Users\vmaster\Desktop\randomFoodPicker2.ps1
+#C:\Users\vmaster\Desktop\Scripts\randomFoodPicker2.ps1
