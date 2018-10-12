@@ -5,8 +5,8 @@ $toDir = Get-Item \\VARUNPLEX-PC\Users\Varun\Desktop\incomingMovies\*
 
 #ftp server info
 $ftp = "ftp://Varun@192.168.1.179/"
-$user = "Varun"
-$pass = ""
+$user = "#######"
+$pass = "#############"
 
 $webclient = New-Object System.Net.WebClient
 $webclient.Credentials = New-Object System.Net.NetworkCredential($user,$pass)
