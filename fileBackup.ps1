@@ -1,39 +1,62 @@
 ﻿$dirsToScan = @()
-$filesToMove = @()
+$filesToBackup = @()
+$backupDir = @()
+$filesInBackup = @{}
+#Hash_Array.Add("Key", "Value")
+#Hash_Array.Key = "value" #edits item and if doesnt exist, then adds it
+#Hash_Array.Remove("Key")
+#Hash_Array."key" #finds the key/value pair
+#Hash_Array.ContainsKey("key")
+#Hash_Array.ContainsValue("Value") #used like: "*value*"
+
+
+
+#hash function to scan the backup and add them to the hashtable
+function getFileHash($fileName){
+    $index = -1
+    $nameToCharArr = [int[]][char[]]$fileName
+    $sum = 0
+    for ($i = 0; $i -lt $nameToCharArr.length-1; $i++){
+        $sum += $nameToCharArr[$i]
+    }
+    $index = $sum % 350 #change the mod
+    return $index
+}
+
+
+
+#scan the backup directory and add the filenames to the hashtables
+foreach($file in $backupDir){
+    $filesInBackup.Add((getFileHash -fileName $file.FullName),"$file.FullName")
+}
+
+
 
 #scan each dir and add the file to the filesToMove array
 foreach($dir in $dirsToScan){
-    foreach($file in (Get-ChildItem $dir -Recurse -Force)){
+    foreach($file in (Get-ChildItem $dir -Recurse -Force).FullName){
         $filesToMove += $file
     }
 }
 
+
+
+
 foreach($file in $filesToMove){
-    #if $file in list of backed up files and size is diff or lastwritetime is diff then backup
+    #if file in filesInBackup and (size is diff or lastwritetime is diff then backup it up)
+    #else back it up
+    if (){
+    }
+    else{
+    }
 }
 
-#hash function
-function getFileHash($fileName){
-    $index = -1
-    $nameToCharArr = ([char]$fileName).ToCharArray()
-    $sum = 0
-    for ($i = 0; $i -lt $nameToCharArr.length; $i++){
-        $sum += $nameToCharArr[$i]
-    }
-    $index = $sum % 2 #change the mod
-}
+
+
 
 
 
 <#
-TODO:
-    - Change the directory for $custodialFiles to the directory in LEND
-    - Change the directory for Destination param in the Copy-Item
-#>
-
-#Import-Module (Join-Path $PSScriptRoot LogWriter)
-#initialize-log -counters 'FilesMoved'
-
 #$custodialFiles = @((Get-ChildItem C:\Users\vmaster\Desktop\Test -Recurse).FullName)
 #$custodialFilesTemp += $custodialFiles | ? {$_ -like '*Loan*'}
 #$filesToMove = @()
@@ -59,3 +82,4 @@ try{
 catch{
 #    write-log "$_.Exception" -level Error
 }
+#>
