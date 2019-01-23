@@ -69,3 +69,6 @@ foreach($file in $filesToBackup){
         continue
     }
 }
+
+$filesToBackup.Clear()
+$filesInBackup.Clear()
