@@ -1,6 +1,13 @@
-﻿$dirsToScan = @()
+﻿<#
+param(
+    [string]$dirsToScan = "C:\Users\vmaster\Desktop\Test",
+    [string]$backupDir = "C:\Users\vmaster\Desktop\Test2"
+)
+#>
+
+$dirsToScan = "C:\Users\vmaster\Desktop\Test"
+$backupDir = "C:\Users\vmaster\Desktop\Test2"
 $filesToBackup = @()
-$backupDir = @()
 $filesInBackup = @{}
 #Hash_Array.Add("Key", "Value")
 #Hash_Array.Key = "value" #edits item and if doesnt exist, then adds it
@@ -26,33 +33,38 @@ function getFileHash($fileName){
 
 
 #scan the backup directory and add the filenames to the hashtables
+#Key-Value will be getFileHash and file.name
 foreach($file in $backupDir){
-    $filesInBackup.Add((getFileHash -fileName $file.FullName),"$file.FullName")
+    $filesInBackup.Add((getFileHash -fileName $file.FullName),"$file")
 }
 
 
 
 #scan each dir and add the file to the filesToMove array
 foreach($dir in $dirsToScan){
-    foreach($file in (Get-ChildItem $dir -Recurse -Force).FullName){
-        $filesToMove += $file
+    $tempDir = (Get-ChildItem $dir -Recurse -Force).Name
+    foreach($file in $tempDir){
+        $filesToBackup += (Join-Path -Path $dir -ChildPath $file)
     }
 }
 
 
-
+######################################################################################################################################################################################
 
 foreach($file in $filesToMove){
     #if file in filesInBackup and (size is diff or lastwritetime is diff then backup it up)
-    #else back it up
-    if (){
+    #else if, file doesnt exist in backup, backup it up
+    #else skip
+    if ($filesInBackup.ContainsValue($file) -and (($file.Length -ne $filesInBackup.ContainsValue($file).Length) -or ($file.LastWriteTime -ne $filesInBackup.ContainsValue($file).LastWriteTime))){
+        Copy-Item $file.FullName -Destination $backupDir
+    }
+    elseif($file -notin $filesInBackup.ContainsValue($file)){
+        Copy-Item $file.FullName -Destination $backupDir
     }
     else{
+        continue
     }
 }
-
-
-
 
 
 
