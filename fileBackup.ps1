@@ -37,6 +37,14 @@ foreach($file in (Get-ChildItem $backupDir -Recurse)){
 }
 
 
+#check the dir to see if there are any files not in subdirectories
+if((Get-ChildItem $dirsToScan -File).Count -gt 0){
+    foreach($file in (Get-ChildItem $dirsToScan -File)){
+        $filesToBackup += (Join-Path -Path $dirsToScan -ChildPath $file)
+    }
+}
+
+
 #scan each dir and add the file to the filesToMove array with the fullNmae
 foreach($dir in ((Get-ChildItem $dirsToScan -Directory).FullName)) {
     foreach($file in (Get-ChildItem $dir -File -Recurse)){
