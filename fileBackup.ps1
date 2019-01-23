@@ -1,20 +1,19 @@
-﻿<#
-param(
-    [string]$dirsToScan = "C:\Users\vmaster\Desktop\Test",
-    [string]$backupDir = "C:\Users\vmaster\Desktop\Test2"
+﻿param(
+    [string]$dirsToScan = "C:\Users\vmaster\Desktop\Test", #default value when param not specified
+    [string]$backupDir = "C:\Users\vmaster\Desktop\Test2"  #default value when param not specified
 )
-#>
 
-$dirsToScan = "C:\Users\vmaster\Desktop\Test"
-$backupDir = "C:\Users\vmaster\Desktop\Test2"
+
+#$dirsToScan = "C:\Users\vmaster\Desktop\Test"
+#$backupDir = "C:\Users\vmaster\Desktop\Test2"
 $filesToBackup = @()
 $filesInBackup = @{}
-#Hash_Array.Add("Key", "Value")
-#Hash_Array.Key = "value" #edits item and if doesnt exist, then adds it
-#Hash_Array.Remove("Key")
-#Hash_Array."key" #finds the key/value pair
-#Hash_Array.ContainsKey("key")
-#Hash_Array.ContainsValue("Value") #used like: "*value*"
+         #Hash_Array.Add("Key", "Value")
+         #Hash_Array.Key = "value" #edits item and if doesnt exist, then adds it
+         #Hash_Array.Remove("Key")
+         #Hash_Array."key" #finds the key/value pair
+         #Hash_Array.ContainsKey("key")
+         #Hash_Array.ContainsValue("Value") #used like: "*value*"
 
 
 
@@ -31,67 +30,34 @@ function getFileHash($fileName){
 }
 
 
-
 #scan the backup directory and add the filenames to the hashtables
 #Key-Value will be getFileHash and file.name
-foreach($file in $backupDir){
-    $filesInBackup.Add((getFileHash -fileName $file.FullName),"$file")
+foreach($file in (Get-ChildItem $backupDir -Recurse)){
+    $filesInBackup.Add((getFileHash -fileName $file.Name),$file)
 }
 
 
-
-#scan each dir and add the file to the filesToMove array
-foreach($dir in $dirsToScan){
-    $tempDir = (Get-ChildItem $dir -Recurse -Force).Name
-    foreach($file in $tempDir){
+#scan each dir and add the file to the filesToMove array with the fullNmae
+foreach($dir in ((Get-ChildItem $dirsToScan -Directory).FullName)) {
+    foreach($file in (Get-ChildItem $dir -File -Recurse)){
         $filesToBackup += (Join-Path -Path $dir -ChildPath $file)
     }
 }
 
 
-######################################################################################################################################################################################
-
-foreach($file in $filesToMove){
-    #if file in filesInBackup and (size is diff or lastwritetime is diff then backup it up)
-    #else if, file doesnt exist in backup, backup it up
-    #else skip
-    if ($filesInBackup.ContainsValue($file) -and (($file.Length -ne $filesInBackup.ContainsValue($file).Length) -or ($file.LastWriteTime -ne $filesInBackup.ContainsValue($file).LastWriteTime))){
-        Copy-Item $file.FullName -Destination $backupDir
+#if file in filesInBackup and (size is diff or lastwritetime is diff then backup it up)
+#else if, file doesnt exist in backup, backup it up
+#else skip
+foreach($file in $filesToBackup){
+    #splitting it so we can compare just the file names and not the directory since they will be different
+    if ($filesInBackup.ContainsValue($file.Split("\")[-1]) -and `
+        (($file.Length -ne (Get-Item $filesInBackup.ContainsValue($file.Split("\")[-1])).Length) -or ($file.LastWriteTime -ne (Get-Item $filesInBackup.ContainsValue($file.Split("\")[-1])).LastWriteTime))){
+        Copy-Item $file -Destination $backupDir
     }
-    elseif($file -notin $filesInBackup.ContainsValue($file)){
-        Copy-Item $file.FullName -Destination $backupDir
+    elseif($file.Split("\")[-1] -notin $filesInBackup.ContainsValue($file.Split("\")[-1])){
+        Copy-Item $file -Destination $backupDir
     }
     else{
         continue
     }
 }
-
-
-
-<#
-#$custodialFiles = @((Get-ChildItem C:\Users\vmaster\Desktop\Test -Recurse).FullName)
-#$custodialFilesTemp += $custodialFiles | ? {$_ -like '*Loan*'}
-#$filesToMove = @()
-
-try{
-    foreach($file in $custodialFilesTemp){
-        if((Get-Item $file).LastWriteTime.ToString('MM/dd/yyyy') -eq ("11/28/2018")){
-            $filesToMove += $file
- #           write-log "File to move: $file" -level Info
-        }else{continue}
-    }
-}
-catch{
-#    write-log "$_.Exception" -level Error
-}
-
-try{
-    foreach($file in $filesToMove){
-        Copy-Item -Path $file -Destination "C:\Users\vmaster\Desktop\Test\Test2"
-#        write-log "Moved file: $file" -level Info
-    }
-}
-catch{
-#    write-log "$_.Exception" -level Error
-}
-#>
