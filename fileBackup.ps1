@@ -3,7 +3,7 @@
     [string]$backupDir = "C:\Users\vm305\Desktop\Test2"  #default value when param not specified
 )
 
-$Logfile = "C:\Users\vm305\Desktop\$($MyInvocation.MyCommand.Name).log"
+$Logfile = "C:\Users\vm305\Desktop\Logs\$($MyInvocation.MyCommand.Name).log"
 #$dirsToScan = "C:\Users\vmaster\Desktop\Test"
 #$backupDir = "C:\Users\vmaster\Desktop\Test2"
 $filesToBackup = @()
