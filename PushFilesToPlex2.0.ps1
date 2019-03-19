@@ -18,7 +18,7 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Renamed '<$item>' to excl
 
 #script that uploads entire folders and its sub-files
 $FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
-$ftp = "ftp://Movies:Drqjrk2hnhbg9ngt@192.168.1.179/"
+$ftp = "ftp://Movies:###########@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -52,7 +52,7 @@ Catch{
 
 #script that uploads only files and no subfolders
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:Drqjrk2hnhbg9ngt@192.168.1.179/"
+$ftp = "ftp://Movies:###########@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
