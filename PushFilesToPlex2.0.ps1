@@ -8,13 +8,13 @@ LogWrite("-----------------------------------Start------------------------------
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 
 
-$FromDir_SubDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory
-$ftp = "ftp://Movies:###########@192.168.1.179/"
+$FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
+$ftp = "ftp://Movies:##############@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
         $ftp2 = $ftp + "/$folder"
-        $files = @(Get-ChildItem $folder.FullName -Recurse)
+        $files = @(Get-ChildItem $folder.FullName -Recurse -File)
     
         $makeDir = [System.Net.WebRequest]::Create($ftp2)
         #$makeDir.Credentials = New-Object System.Net.NetworkCredential($user,$pass)
@@ -26,13 +26,14 @@ Try{
             $webclient = New-Object -TypeName System.Net.WebClient
             $uri = New-Object -TypeName System.Uri -ArgumentList "$ftp2/$($file.Name)"
 
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file: '<$($file)>' to folder: '<$folder>'")
             $webclient.UploadFile("$uri", $file.FullName)
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file: '<$($file)>' to folder: '<$folder>'")
 
-            #Remove-Item $file.FullName -Recurse -Force 
+            Remove-Item $file.FullName -Recurse -Force 
         }
-        #cp $folder "T:\Movies" -Recurse
-        #rmdir $folder.FullName
+        cp $folder.FullName -Recurse  -Destination "T:\Movies" -Container
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied folder '<$($folder.FullName)>' to BACKUP drive")
+        rmdir $folder.FullName -Force
     }
 }
 Catch{
@@ -42,7 +43,7 @@ Catch{
 
 
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:###########@192.168.1.179/"
+$ftp = "ftp://Movies:##########@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
@@ -54,9 +55,9 @@ Try{
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file <$($file)>")
         $webclient.UploadFile($uri, $file.FullName)
 
-        #cp $file.fullname "T:\Movies"
-
-        #Remove-Item $file.FullName
+        cp $file.fullname "T:\Movies"
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied file '<$($file.FullName)>' to BACKUP drive")
+        Remove-Item $file.FullName
     }
 }
 Catch{
