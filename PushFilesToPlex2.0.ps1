@@ -13,11 +13,12 @@ $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
 }
+LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Renamed '<$item>' to exclude brackets")
 
 
 #script that uploads entire folders and its sub-files
 $FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
-$ftp = "ftp://Movies:############@192.168.1.179/"
+$ftp = "ftp://Movies:Drqjrk2hnhbg9ngt@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -41,7 +42,7 @@ Try{
         }
         cp $folder.FullName -Recurse  -Destination "T:\Movies" -Container
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied folder '<$($folder.FullName)>' to BACKUP drive")
-        rmdir $folder.FullName -Force
+        rmdir $folder.FullName -Force -Recurse
     }
 }
 Catch{
@@ -51,7 +52,7 @@ Catch{
 
 #script that uploads only files and no subfolders
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:###########@192.168.1.179/"
+$ftp = "ftp://Movies:Drqjrk2hnhbg9ngt@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
