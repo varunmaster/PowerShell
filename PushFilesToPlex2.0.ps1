@@ -12,8 +12,8 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Renamed '<$item>' to exclude brackets")
 }
-LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Renamed '<$item>' to exclude brackets")
 
 
 #script that uploads entire folders and its sub-files
