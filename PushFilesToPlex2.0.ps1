@@ -37,7 +37,7 @@ Try{
 
             $webclient.UploadFile("$uri", $file.FullName)
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file: '<$($file)>' to folder: '<$folder>'")
-            Send-MailMessage -SmtpServer 'ESXI-Plex' -To 'varunmaster95@gmail.com, nvelani2@gmail.com' -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            Send-MailMessage -SmtpServer 'ESXI-Plex' -To @("varunmaster95@gmail.com","nvelani2@gmail.com") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
 
             Remove-Item $file.FullName -Recurse -Force 
         }
@@ -67,7 +67,7 @@ Try{
 
         cp $file.fullname "T:\Movies"
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied file '<$($file.FullName)>' to BACKUP drive")
-        Send-MailMessage -SmtpServer 'ESXI-Plex' -To 'varunmaster95@gmail.com, nvelani2@gmail.com' -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        Send-MailMessage -SmtpServer 'ESXI-Plex' -To @("varunmaster95@gmail.com","nvelani2@gmail.com") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
         Remove-Item $file.FullName
     }
