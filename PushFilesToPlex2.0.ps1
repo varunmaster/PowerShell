@@ -12,13 +12,13 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Renamed '<$item>' to exclude brackets")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Renamed '<$item>' to exclude brackets")
 }
 
 
 #script that uploads entire folders and its sub-files
 $FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
-$ftp = "ftp://Movies:###########@192.168.1.179/"
+$ftp = "ftp://Movies::###########@@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -37,6 +37,7 @@ Try{
 
             $webclient.UploadFile("$uri", $file.FullName)
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file: '<$($file)>' to folder: '<$folder>'")
+            Send-MailMessage -SmtpServer 'ESXI-Plex' -To 'varunmaster95@gmail.com, nvelani2@gmail.com' -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
 
             Remove-Item $file.FullName -Recurse -Force 
         }
@@ -66,6 +67,8 @@ Try{
 
         cp $file.fullname "T:\Movies"
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied file '<$($file.FullName)>' to BACKUP drive")
+        Send-MailMessage -SmtpServer 'ESXI-Plex' -To 'varunmaster95@gmail.com, nvelani2@gmail.com' -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        
         Remove-Item $file.FullName
     }
 }
