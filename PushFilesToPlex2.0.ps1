@@ -9,7 +9,7 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 
 
 #renaming all files that have a "[" or "]" in the name as powershell is stupid and doesn't like it when uploading files
-$dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
+$dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Recurse)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Renamed '<$item>' to exclude brackets")
