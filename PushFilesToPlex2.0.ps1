@@ -1,8 +1,10 @@
 ﻿$Logfile = "C:\Users\vm305\Desktop\Logs\$($MyInvocation.MyCommand.Name).log"
 function LogWrite($logString)
 {
-   Add-content $Logfile -value $logString
+   Add-content $Logfile -value $logString 
 }
+$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
+$count = 0
 
 LogWrite("-----------------------------------Start-----------------------------------")
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
@@ -12,13 +14,13 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Recurse)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Renamed '<$item>' to exclude brackets")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED: '<$item>' to exclude brackets")
 }
 
 
 #script that uploads entire folders and its sub-files
 $FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
-$ftp = "ftp://Movies::###########@@192.168.1.179/"
+$ftp = "ftp://Movies:###############@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -29,20 +31,20 @@ Try{
         #$makeDir.Credentials = New-Object System.Net.NetworkCredential($user,$pass)
         $makeDir.Method = [System.Net.WebRequestMethods+FTP]::MakeDirectory
         $makeDir.GetResponse()
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Created Folder <$folder>")
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER: <$folder>")
 
         foreach($file in $files){
             $webclient = New-Object -TypeName System.Net.WebClient
             $uri = New-Object -TypeName System.Uri -ArgumentList "$ftp2/$($file.Name)"
 
             $webclient.UploadFile("$uri", $file.FullName)
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file: '<$($file)>' to folder: '<$folder>'")
-            Send-MailMessage -SmtpServer 'ESXI-Plex' -To @("varunmaster95@gmail.com","nvelani2@gmail.com") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
-
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE: '<$($file)>' to folder: '<$folder>'")
+            #Send-MailMessage -SmtpServer '#####' -To @(###############) -From '#########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            $count += 1
             Remove-Item $file.FullName -Recurse -Force 
         }
-        cp $folder.FullName -Recurse  -Destination "T:\Movies" -Container
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied folder '<$($folder.FullName)>' to BACKUP drive")
+        Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse 
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER: '<$($folder.FullName)>' to BACKUP drive")
         rmdir $folder.FullName -Force -Recurse
     }
 }
@@ -53,7 +55,7 @@ Catch{
 
 #script that uploads only files and no subfolders
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:###########@192.168.1.179/"
+$ftp = "ftp://Movies:#################@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
@@ -62,12 +64,13 @@ Try{
         $webclient = New-Object -TypeName System.Net.WebClient
         $uri = New-Object -TypeName System.Uri -ArgumentList $ftp1
 
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded file <$($file)>")
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE: <$($file)>")
         $webclient.UploadFile($uri, $file.FullName)
 
-        cp $file.fullname "T:\Movies"
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Copied file '<$($file.FullName)>' to BACKUP drive")
-        Send-MailMessage -SmtpServer 'ESXI-Plex' -To @("varunmaster95@gmail.com","nvelani2@gmail.com") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        $count += 1
+        Copy-Item $file.fullname -Destination "T:\Movies"
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE: '<$($file.FullName)>' to BACKUP drive")
+        #Send-MailMessage -SmtpServer '#####' -To @("############") -From '############' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
         Remove-Item $file.FullName
     }
@@ -75,6 +78,7 @@ Try{
 Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $_.Exception.Message")
 }
-
+$stopwatch.Stop()
+LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": TOTAL ITEMS: <$($count)> uploaded in <$($stopwatch.Elapsed.TotalSeconds)> seconds")
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script ended")
 LogWrite("------------------------------------End------------------------------------")
