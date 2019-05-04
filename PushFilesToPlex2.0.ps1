@@ -33,18 +33,19 @@ Try{
         $makeDir.GetResponse()
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER: <$folder>")
 
+        Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse 
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER: '<$($folder.FullName)>' to BACKUP drive")
+
         foreach($file in $files){
             $webclient = New-Object -TypeName System.Net.WebClient
             $uri = New-Object -TypeName System.Uri -ArgumentList "$ftp2/$($file.Name)"
 
             $webclient.UploadFile("$uri", $file.FullName)
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE: '<$($file)>' to folder: '<$folder>'")
-            #Send-MailMessage -SmtpServer '#####' -To @(###############) -From '#########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            #Send-MailMessage -SmtpServer 'ESXI-Plex' -To @("varunmaster95@gmail.com","nvelani2@gmail.com","s.advani96@gmail.com") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
             $count += 1
             Remove-Item $file.FullName -Recurse -Force 
         }
-        Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse 
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER: '<$($folder.FullName)>' to BACKUP drive")
         rmdir $folder.FullName -Force -Recurse
     }
 }
