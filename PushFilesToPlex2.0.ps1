@@ -5,6 +5,7 @@ function LogWrite($logString)
 }
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 $count = 0
+$totalSize = 0
 
 LogWrite("-----------------------------------Start-----------------------------------")
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
@@ -20,7 +21,7 @@ foreach($item in $dir){
 
 #script that uploads entire folders and its sub-files
 $FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
-$ftp = "ftp://Movies:###############@192.168.1.179/"
+$ftp = "ftp://Movies:#############@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -42,8 +43,9 @@ Try{
 
             $webclient.UploadFile("$uri", $file.FullName)
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE: '<$($file)>' to folder: '<$folder>'")
-            #Send-MailMessage -SmtpServer 'ESXI-Plex' -To @("varunmaster95@gmail.com","nvelani2@gmail.com","s.advani96@gmail.com") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            #Send-MailMessage -SmtpServer '#####3' -To @("############") -From '#########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
             $count += 1
+            $totalSize += $file.Length/1MB
             Remove-Item $file.FullName -Recurse -Force 
         }
         rmdir $folder.FullName -Force -Recurse
@@ -56,7 +58,7 @@ Catch{
 
 #script that uploads only files and no subfolders
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:#################@192.168.1.179/"
+$ftp = "ftp://Movies:##############@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
@@ -71,7 +73,7 @@ Try{
         $count += 1
         Copy-Item $file.fullname -Destination "T:\Movies"
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE: '<$($file.FullName)>' to BACKUP drive")
-        #Send-MailMessage -SmtpServer '#####' -To @("############") -From '############' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        #Send-MailMessage -SmtpServer '#####3' -To @("############") -From '#########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
         Remove-Item $file.FullName
     }
@@ -79,7 +81,8 @@ Try{
 Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $_.Exception.Message")
 }
+
 $stopwatch.Stop()
-LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": TOTAL ITEMS: <$($count)> uploaded in <$($stopwatch.Elapsed.TotalSeconds)> seconds")
+LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded <$($count)> items in <$($stopwatch.Elapsed.TotalSeconds)> seconds of size <$($totalSize)> MB")
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script ended")
 LogWrite("------------------------------------End------------------------------------")
