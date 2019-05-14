@@ -1,10 +1,10 @@
 param(
     [Parameter(Mandatory = $true)][String] $hostName,
     [Parameter(Mandatory = $false)][String] $ip,
-    [Parameter(Mandatory = $true)][String] $DNS,
-    [Parameter(Mandatory = $true)][String] $ipMode,
+    [Parameter(Mandatory = $true)] $DNS,
+#    [Parameter(Mandatory = $true)][String] $ipMode,
     [Parameter(Mandatory = $true)][String] $firewallRuleName,
-    [Parameter(Mandatory = $true)][String] $firewallRulePort
+    [Parameter(Mandatory = $true)] $firewallRulePort
 )
 
 $Logfile = "C:\Logs\$($MyInvocation.MyCommand.Name).log"
@@ -45,3 +45,9 @@ function firewallRules($name, $port){
 function renameComputer ($newName){
     Rename-Computer -NewName $hostName
 }
+
+
+changeIP -ip $ip
+changeDNS -DNS
+firewallRules -name $firewallRuleName -port $firewallRulePort
+renameComputer -newName $hostName 
