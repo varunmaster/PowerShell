@@ -1,10 +1,10 @@
 param(
-    [Parameter(Mandatory = $true)][String] $hostName,
-    [Parameter(Mandatory = $false)][String] $ip,
-    [Parameter(Mandatory = $true)] $DNS,
+    [Parameter(Mandatory = $false,HelpMessage="What you want to rename comp to")][String] $hostName,
+    [Parameter(Mandatory = $false,HelpMessage="What you want ip to be")][String] $ip,
+    [Parameter(Mandatory = $false,HelpMessage="Repoint to 192.168.1.166")] $DNS,
 #    [Parameter(Mandatory = $true)][String] $ipMode,
-    [Parameter(Mandatory = $true)][String] $firewallRuleName,
-    [Parameter(Mandatory = $true)] $firewallRulePort
+    [Parameter(Mandatory = $false,HelpMessage="Name of rule, e.g. Allow My Rules")][String] $firewallRuleName,
+    [Parameter(Mandatory = $false,HelpMessage="The port numbers: 25,587,32400,8080,8085")] $firewallRulePort
 )
 
 $Logfile = "C:\Logs\$($MyInvocation.MyCommand.Name).log"
@@ -19,7 +19,8 @@ function changeIP ($ip) {
         $ipOld = Test-Connection -ComputerName $currName -Count 1 | Select-Object IPV4Address
 
         if ($ipOld -ne $ip) {
-            New-NetIPAddress -IPAddress $ip -DefaultGateway 192.168.1.1 -PrefixLength 24
+            LogWrite("IP changed")
+            #New-NetIPAddress -IPAddress $ip -InterfaceAlias 'Ethernet0' -PrefixLength 24 -DefaultGateway 192.168.1.1
         }else {
             LogWrite("Current IP is: $($ipOld) and new IP is : $($ip). Nothing changed")
         }
@@ -29,9 +30,15 @@ function changeIP ($ip) {
     }
 }
 
-function changeDNS ($DNS){
+function changeDNS (){
     try{
-        Set-DnsClientServerAddress -ServerAddresses 192.168.1.166, 8.8.8.8
+        if (!$DNS){
+            LogWrite("DNS changed")
+            #Set-DnsClientServerAddress -ServerAddresses 192.168.1.166, 8.8.8.8 
+        }
+        else {
+            Write-Host "enter 'pihole' as the DNS parameter"
+        }
     }
     catch{
         LogWrite($_.Exception.Message)
@@ -39,15 +46,43 @@ function changeDNS ($DNS){
 }
 
 function firewallRules($name, $port){
-    New-NetFirewallRule -DisplayName $name -Direction Inbound -LocalPort $port -Protocol TCP -Action Allow
+    try{
+        LogWrite("firewall rule changed")
+        #New-NetFirewallRule -DisplayName $name -Direction Inbound -LocalPort $port -Protocol TCP -Action Allow -Group 
+    }
+    catch{
+        LogWrite($_.Exception.Message)
+    }
 }
 
 function renameComputer ($newName){
-    Rename-Computer -NewName $hostName
+    try{
+        LogWrite("computer name changed")
+        #Rename-Computer -NewName $hostName 
+    }
+    catch{
+        LogWrite($_.Exception.Message)
+    }
 }
 
-
-changeIP -ip $ip
-changeDNS -DNS
-firewallRules -name $firewallRuleName -port $firewallRulePort
-renameComputer -newName $hostName 
+if(!$ip){
+    changeIP -ip $ip
+}else{
+    continue
+}
+if(!$DNS){
+    changeDNS
+}else{
+    continue
+}
+if(!$firewallRuleName){
+    firewallRules -name $firewallRuleName -port $firewallRulePort
+}else{
+    continue
+}
+if (!$firewallRulePort) {
+    renameComputer -newName $hostName 
+}else{
+    continue
+}
+Read-Host "tea;lst"
