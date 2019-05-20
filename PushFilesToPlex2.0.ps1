@@ -15,7 +15,7 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Recurse)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED: '<$item>' to exclude brackets")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED TO EXCLUDE BRACKETS: '<$item>'")
 }
 
 
@@ -31,19 +31,19 @@ Try{
         $makeDir = [System.Net.WebRequest]::Create($ftp2)
         #$makeDir.Credentials = New-Object System.Net.NetworkCredential($user,$pass)
         $makeDir.Method = [System.Net.WebRequestMethods+FTP]::MakeDirectory
-        $makeDir.GetResponse()
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER: <$folder>")
+        #$makeDir.GetResponse()
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER ON FTP: <$folder>")
 
         Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse 
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER: '<$($folder.FullName)>' to BACKUP drive")
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER to BACKUP drive: '<$($folder.FullName)>'")
 
         foreach($file in $files){
             $webclient = New-Object -TypeName System.Net.WebClient
             $uri = New-Object -TypeName System.Uri -ArgumentList "$ftp2/$($file.Name)"
 
             $webclient.UploadFile("$uri", $file.FullName)
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE: '<$($file)>' to folder: '<$folder>'")
-            #Send-MailMessage -SmtpServer '#####3' -To @("############") -From '#########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
+            #Send-MailMessage -SmtpServer '######' -To @("################") -From '######' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
             $count += 1
             $totalSize += $file.Length/1MB
             Remove-Item $file.FullName -Recurse -Force 
@@ -52,13 +52,13 @@ Try{
     }
 }
 Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $_.Exception.Message")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Error occurred: $_.Exception.Message")
 }
 
 
 #script that uploads only files and no subfolders
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:##############@192.168.1.179/"
+$ftp = "ftp://Movies:################@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
@@ -67,19 +67,19 @@ Try{
         $webclient = New-Object -TypeName System.Net.WebClient
         $uri = New-Object -TypeName System.Uri -ArgumentList $ftp1
 
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE: <$($file)>")
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE to FTP: <$($file)>")
         $webclient.UploadFile($uri, $file.FullName)
 
         $count += 1
         Copy-Item $file.fullname -Destination "T:\Movies"
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE: '<$($file.FullName)>' to BACKUP drive")
-        #Send-MailMessage -SmtpServer '#####3' -To @("############") -From '#########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE to BACKUP drive: '<$($file.FullName)>'")
+        #Send-MailMessage -SmtpServer '#####' -To @("########") -From '#####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
         Remove-Item $file.FullName
     }
 }
 Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $_.Exception.Message")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Error occurred: $_.Exception.Message")
 }
 
 $stopwatch.Stop()
