@@ -31,7 +31,7 @@ Try{
         $makeDir = [System.Net.WebRequest]::Create($ftp2)
         #$makeDir.Credentials = New-Object System.Net.NetworkCredential($user,$pass)
         $makeDir.Method = [System.Net.WebRequestMethods+FTP]::MakeDirectory
-        #$makeDir.GetResponse()
+        $makeDir.GetResponse()
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER ON FTP: <$folder>")
 
         Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse 
