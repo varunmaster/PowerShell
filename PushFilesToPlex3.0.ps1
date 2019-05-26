@@ -12,16 +12,21 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 
 
 #renaming all files that have a "[" or "]" in the name as powershell is stupid and doesn't like it when uploading files
-$dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Recurse)
+$dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
 foreach($item in $dir){
-    Rename-Item -LiteralPath $item.FullName -NewName ($item.Name -replace "[\[\]]",'')
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED TO EXCLUDE BRACKETS: '<$item>'")
+    Rename-Item -LiteralPath $item.FullName -NewName ($item.name -replace "[\[\]]",'' `
+                                                                 -replace "1080p",'' `
+                                                                 -replace "webrip",'' `
+                                                                 -replace "bluray",'' `
+                                                                 -replace "yts.am",'' `
+                                                                 )
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
 }
 
 
 #script that uploads entire folders and its sub-files
-$FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -Directory)
-$ftp = "ftp://Movies:#############@192.168.1.179/"
+$FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
+$ftp = "ftp://###############@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -43,7 +48,7 @@ Try{
 
             $webclient.UploadFile("$uri", $file.FullName)
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
-            #Send-MailMessage -SmtpServer '######' -To @("################") -From '######' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            #Send-MailMessage -SmtpServer '####' -To @("###############") -From '########' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
             $count += 1
             $totalSize += $file.Length/1MB
             Remove-Item $file.FullName -Recurse -Force 
@@ -52,13 +57,13 @@ Try{
     }
 }
 Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Error occurred: $_.Exception.Message")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $_.Exception.Message")
 }
 
 
 #script that uploads only files and no subfolders
-$FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload\" -File
-$ftp = "ftp://Movies:################@192.168.1.179/"
+$FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -File
+$ftp = "ftp://##############@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
@@ -73,7 +78,7 @@ Try{
         $count += 1
         Copy-Item $file.fullname -Destination "T:\Movies" -Force
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE to BACKUP drive: '<$($file.FullName)>'")
-        #Send-MailMessage -SmtpServer '#####' -To @("########") -From '#####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        #Send-MailMessage -SmtpServer '##########' -To @("########") -From '#######' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
         Remove-Item $file.FullName
     }
