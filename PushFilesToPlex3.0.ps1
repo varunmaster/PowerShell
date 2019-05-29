@@ -57,7 +57,7 @@ Try{
     }
 }
 Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $_.Exception.Message")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "ERROR OCCURRED: $_.Exception.Message")
 }
 
 
@@ -84,7 +84,7 @@ Try{
     }
 }
 Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "Error occurred: $_.Exception.Message")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "ERROR OCCURRED: $_.Exception.Message")
 }
 
 $stopwatch.Stop()
