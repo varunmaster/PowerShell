@@ -13,6 +13,8 @@ function checkIfFileAlreadyOnFTP ($folder){
     $rs = $ftpGR.GetResponseStream()
     $StreamReader = New-Object System.IO.Streamreader $rs
     $filesOnFtp = @($StreamReader.ReadToEnd() -split [Environment]::NewLine) #this puts all the files in an array 
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CLOSING FTP CONNECTION")
+    $ftpGR.Close()
 
     if($filesOnFtp -contains $folder){
         return $true
@@ -36,7 +38,7 @@ foreach($item in $dir){
                                                                  -replace "webrip",'' `
                                                                  -replace "bluray",'' `
                                                                  -replace "yts.am",'' `
-                                                                 )
+                                                                 ) -ErrorAction Continue
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
 }
 
@@ -61,7 +63,7 @@ Try{
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER ON FTP: <$folder>")
 
             Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse -Force
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER to BACKUP drive: '<$($folder.FullName)>'")
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER to BACKUP DRIVE T:\Movies: '<$($folder.Name)>'")
 
             foreach($file in $files){
                 $webclient = New-Object -TypeName System.Net.WebClient
@@ -69,12 +71,15 @@ Try{
 
                 $webclient.UploadFile("$uri", $file.FullName)
                 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
-                #Send-MailMessage -SmtpServer '####' -To @("#########") -From '#####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+                #Send-MailMessage -SmtpServer '####' -To @("######") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
                 $count += 1
                 $totalSize += $file.Length/1MB
                 Remove-Item $file.FullName -Recurse -Force 
             }
             rmdir $folder.FullName -Force -Recurse
+            $res = $makeDir.GetResponse()
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CLOSING FTP CONNECTION")
+            $res.Close()
         }
     }
 }
@@ -100,13 +105,13 @@ Try{
         $count += 1
         Copy-Item $file.fullname -Destination "T:\Movies" -Force
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE to BACKUP drive: '<$($file.FullName)>'")
-        #Send-MailMessage -SmtpServer '#####' -To @("########") -From '#####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+        #Send-MailMessage -SmtpServer '#####' -To @("#####") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
         Remove-Item $file.FullName
     }
 }
 Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + "ERROR OCCURRED: $_.Exception.Message")
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
 }
 
 $stopwatch.Stop()
