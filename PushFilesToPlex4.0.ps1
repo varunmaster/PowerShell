@@ -38,6 +38,10 @@ foreach($item in $dir){
                                                                  -replace "webrip",'' `
                                                                  -replace "bluray",'' `
                                                                  -replace "yts.am",'' `
+                                                                 -replace "yify",'' `
+                                                                 -replace "rar.bg",'' `
+                                                                 -replace "x264",'' `
+                                                                 -replace "yts.ag",'' `
                                                                  ) -ErrorAction Continue
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
 }
