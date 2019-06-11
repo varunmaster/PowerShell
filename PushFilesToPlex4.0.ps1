@@ -35,6 +35,7 @@ $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
 foreach($item in $dir){
     Rename-Item -LiteralPath $item.FullName -NewName ($item.name -replace "[\[\]]",'' `
                                                                  -replace "1080p",'' `
+                                                                 -replace "1080",'' `
                                                                  -replace "webrip",'' `
                                                                  -replace "bluray",'' `
                                                                  -replace "yts.am",'' `
@@ -42,6 +43,8 @@ foreach($item in $dir){
                                                                  -replace "rar.bg",'' `
                                                                  -replace "x264",'' `
                                                                  -replace "yts.ag",'' `
+                                                                 -replace "720p",'' `
+                                                                 -replace "720",'' `
                                                                  ) -ErrorAction Continue
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
 }
@@ -58,6 +61,7 @@ Try{
         if ((checkIfFileAlreadyOnFTP -folder $folder) -eq $true){
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": FOLDER ALREADY ON FTP...SKIPPING AND REMOVING '<$folder>'")
             rmdir $folder.FullName -Force -Recurse
+            continue
         }else{
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": FOLDER NOT ON FTP...UPLOADING '<$folder>'")
             $makeDir = [System.Net.WebRequest]::Create($ftp2)
@@ -74,7 +78,7 @@ Try{
                 $uri = New-Object -TypeName System.Uri -ArgumentList "$ftp2/$($file.Name)"
 
                 $webclient.UploadFile("$uri", $file.FullName)
-                LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
+                LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
                 #Send-MailMessage -SmtpServer '####' -To @("######") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
                 $count += 1
                 $totalSize += $file.Length/1MB
@@ -98,20 +102,28 @@ $ftp = "ftp://#################@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
-        $ftp1 = $ftp + "/$($file.Name)"
 
-        $webclient = New-Object -TypeName System.Net.WebClient
-        $uri = New-Object -TypeName System.Uri -ArgumentList $ftp1
+        if ((checkIfFileAlreadyOnFTP -folder $file) -eq $true){
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": FILE ALREADY ON FTP...SKIPPING AND REMOVING '<$file>'")
+            rmdir $file.FullName -Force -Recurse
+            continue
+        }else{
+            Copy-Item $file.fullname -Destination "T:\Movies" -Force
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE to BACKUP drive: '<$($file.Name)>'")
+ 
+            $ftp1 = $ftp + "/$($file.Name)"
+   
+            $webclient = New-Object -TypeName System.Net.WebClient
+            $uri = New-Object -TypeName System.Uri -ArgumentList $ftp1
 
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": UPLOADED FILE to FTP: <$($file)>")
-        $webclient.UploadFile($uri, $file.FullName)
+            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: <$($file)>")
+            $webclient.UploadFile($uri, $file.FullName)
 
-        $count += 1
-        Copy-Item $file.fullname -Destination "T:\Movies" -Force
-        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE to BACKUP drive: '<$($file.FullName)>'")
-        #Send-MailMessage -SmtpServer '#####' -To @("#####") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            $count += 1
+            #Send-MailMessage -SmtpServer '#####' -To @("#####") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
         
-        Remove-Item $file.FullName
+            Remove-Item $file.FullName
+        }
     }
 }
 Catch{
