@@ -131,6 +131,6 @@ Catch{
 }
 
 $stopwatch.Stop()
-LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded <$($count)> items in <$($stopwatch.Elapsed.TotalSeconds)> seconds of size <$($totalSize)> MB")
+LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Uploaded <$($count)> items in <$($stopwatch.Elapsed.TotalSeconds)> seconds of size <$($totalSize)> MB at avg speed of <$($totalSize/$stopwatch.Elapsed.TotalSeconds)> MB/s")
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script ended")
 LogWrite("------------------------------------End------------------------------------")
