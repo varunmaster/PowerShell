@@ -45,6 +45,7 @@ foreach($item in $dir){
                                                                  -replace "yts.ag",'' `
                                                                  -replace "720p",'' `
                                                                  -replace "720",'' `
+                                                                 -replace "yts.lt",'' `
                                                                  ) -ErrorAction Continue
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
 }
@@ -79,7 +80,9 @@ Try{
 
                 $webclient.UploadFile("$uri", $file.FullName)
                 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
-                #Send-MailMessage -SmtpServer '####' -To @("######") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+                #Send-MailMessage -SmtpServer '####' -To @("#####") -From '######' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+                $creds = new-object -typename System.Management.Automation.PSCredential -argumentlist "#####",(Get-Content "C:\Users\vm305\Desktop\Scripts1\cred.txt" | ConvertTo-SecureString)
+                Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock {Send-MailMessage -SMTPServer '####' -To @("#####") -From '#####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: '<$folder>'"} -Credential $creds
                 $count += 1
                 $totalSize += $file.Length/1MB
                 Remove-Item $file.FullName -Recurse -Force 
@@ -120,8 +123,9 @@ Try{
             $webclient.UploadFile($uri, $file.FullName)
 
             $count += 1
-            #Send-MailMessage -SmtpServer '#####' -To @("#####") -From '####' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
-        
+            #Send-MailMessage -SmtpServer '#######' -To @("###########") -From 'Plex@ESXI-Plex.com' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
+            $creds = new-object -typename System.Management.Automation.PSCredential -argumentlist "####",(Get-Content "C:\Users\vm305\Desktop\Scripts1\cred.txt" | ConvertTo-SecureString)
+            Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock {Send-MailMessage -SMTPServer '######' -To @("#######") -From '######' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: '<$folder>'"} -Credential $creds
             Remove-Item $file.FullName
         }
     }
