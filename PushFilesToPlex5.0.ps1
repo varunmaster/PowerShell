@@ -107,9 +107,9 @@ Try{
             $res = $makeDir.GetResponse()
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CLOSING FTP CONNECTION")
             $res.Close()
+            sendEmail($FromDir_SubDir)
         }
     }
-    sendEmail($FromDir_SubDir)
 }
 Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
