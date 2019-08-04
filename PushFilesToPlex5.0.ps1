@@ -1,8 +1,14 @@
 ﻿$Logfile = "C:\Logs\$($MyInvocation.MyCommand.Name).log"
+$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
+$count = 0
+$totalSize = 0
 function LogWrite($logString)
 {
    Add-content $Logfile -value $logString 
 }
+LogWrite("<-----------------------------------Start----------------------------------->")
+LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
+
 function checkIfFileAlreadyOnFTP ($folder){
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CHECKING IF FILE IS ON FTP: '<$folder>'")
     $ftpCheckFiles = [System.Net.FtpWebRequest]::Create("ftp://192.168.1.179")
@@ -32,20 +38,15 @@ function sendEmail ($folder){
         $to = @("###")
         $from = '####'
         $sub = 'New Movie Uploaded'
-        $body = "Movie uploaded: " + $args[0]
+        $body = "Movie(s) uploaded: " + $args[0]
 
         Send-MailMessage -SMTPServer $server -To $to -From $from -Subject $sub -Body $body
     }
-    Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList $folder
+    Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList ($folder -join ", ")
+    #write-host $folder | Out-String
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": EMAIL SENT")
     #thanks to ralphkyttle = https://blogs.technet.microsoft.com/ralphkyttle/2015/06/04/powershell-passing-parameters-as-variables-using-remote-management-and-invoke-command/
 }
-
-$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
-$count = 0
-$totalSize = 0
-LogWrite("<-----------------------------------Start----------------------------------->")
-LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 
 #renaming all files that have a "[" or "]" in the name as powershell is stupid and doesn't like it when uploading files
 $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
@@ -98,7 +99,6 @@ Try{
                 $webclient.UploadFile("$uri", $file.FullName)
                 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
                 #Send-MailMessage -SmtpServer '###' -To @("####") -From '###' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
-
                 $count += 1
                 $totalSize += $file.Length/1MB
                 Remove-Item $file.FullName -Recurse -Force 
