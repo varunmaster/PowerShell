@@ -108,8 +108,8 @@ Try{
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CLOSING FTP CONNECTION")
             $res.Close()
         }
-        sendEmail($folder)
     }
+    sendEmail($FromDir_SubDir)
 }
 Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
