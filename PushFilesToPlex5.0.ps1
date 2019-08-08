@@ -2,6 +2,7 @@
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 $count = 0
 $totalSize = 0
+$folderEmailList = @()
 function LogWrite($logString)
 {
    Add-content $Logfile -value $logString 
@@ -30,7 +31,7 @@ function checkIfFileAlreadyOnFTP ($folder){
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": FINISHED CHECKING IF ON FTP")
 }
 
-function sendEmail ($folder){
+function sendEmail ($folderEmailList){
     $pw = '###########' | ConvertTo-SecureString -Force -AsPlainText
     $creds = New-Object System.Management.Automation.PsCredential("####", $pw)
     $scriptBlock = {
@@ -42,8 +43,7 @@ function sendEmail ($folder){
 
         Send-MailMessage -SMTPServer $server -To $to -From $from -Subject $sub -Body $body
     }
-    Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList ($folder -join ", ")
-    #write-host $folder | Out-String
+    Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList ($folderEmailList -join ", ")
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": EMAIL SENT")
     #thanks to ralphkyttle = https://blogs.technet.microsoft.com/ralphkyttle/2015/06/04/powershell-passing-parameters-as-variables-using-remote-management-and-invoke-command/
 }
@@ -88,6 +88,7 @@ Try{
             $makeDir.Method = [System.Net.WebRequestMethods+FTP]::MakeDirectory
             $makeDir.GetResponse()
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER ON FTP: <$folder>")
+            $folderEmailList += $folder.Name
 
             Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse -Force
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER to BACKUP DRIVE T:\Movies: '<$($folder.Name)>'")
@@ -98,7 +99,6 @@ Try{
 
                 $webclient.UploadFile("$uri", $file.FullName)
                 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: '<$($file)>' to folder: '<$folder>'")
-                #Send-MailMessage -SmtpServer '###' -To @("####") -From '###' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
                 $count += 1
                 $totalSize += $file.Length/1MB
                 Remove-Item $file.FullName -Recurse -Force 
@@ -107,8 +107,10 @@ Try{
             $res = $makeDir.GetResponse()
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CLOSING FTP CONNECTION")
             $res.Close()
-            sendEmail($FromDir_SubDir)
         }
+    }
+    if ($folderEmailList.Length -ne 0){
+        sendEmail($folderEmailList)
     }
 }
 Catch{
@@ -140,7 +142,6 @@ Try{
             $webclient.UploadFile($uri, $file.FullName)
 
             $count += 1
-            #Send-MailMessage -SmtpServer '###' -To @("###") -From '###' -Subject 'New Movie Uploaded!' -Body "Following movie has been uploaded: $($file.Name)"
             sendEmail($file)
             Remove-Item $file.FullName
         }
