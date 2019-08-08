@@ -141,10 +141,13 @@ Try{
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: <$($file)>")
             $webclient.UploadFile($uri, $file.FullName)
 
+            $folderEmailList += $file
             $count += 1
-            sendEmail($file)
             Remove-Item $file.FullName
         }
+    }
+    if ($folderEmailList.Length -ne 0){
+        sendEmail($folderEmailList)
     }
 }
 Catch{
