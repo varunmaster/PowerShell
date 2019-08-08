@@ -13,7 +13,7 @@ LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 function checkIfFileAlreadyOnFTP ($folder){
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CHECKING IF FILE IS ON FTP: '<$folder>'")
     $ftpCheckFiles = [System.Net.FtpWebRequest]::Create("ftp://192.168.1.179")
-    $ftpCheckFiles.Credentials = New-Object System.Net.NetworkCredential("######","#################")
+    $ftpCheckFiles.Credentials = New-Object System.Net.NetworkCredential("###","###")
     $ftpCheckFiles.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectory
     $ftpCheckFiles.GetResponse()
     $ftpGR = $ftpCheckFiles.GetResponse()
@@ -32,12 +32,12 @@ function checkIfFileAlreadyOnFTP ($folder){
 }
 
 function sendEmail ($folderEmailList){
-    $pw = '###########' | ConvertTo-SecureString -Force -AsPlainText
-    $creds = New-Object System.Management.Automation.PsCredential("####", $pw)
+    $pw = '###' | ConvertTo-SecureString -Force -AsPlainText
+    $creds = New-Object System.Management.Automation.PsCredential("###", $pw)
     $scriptBlock = {
-        $server = '####'
+        $server = '###'
         $to = @("###")
-        $from = '####'
+        $from = '###'
         $sub = 'New Movie Uploaded'
         $body = "Movie(s) uploaded: " + $args[0]
 
@@ -70,7 +70,7 @@ foreach($item in $dir){
 
 #script that uploads entire folders and its sub-files
 $FromDir_SubDir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
-$ftp = "ftp://#############@192.168.1.179/"
+$ftp = "ftp://###@192.168.1.179/"
 
 Try{
     foreach ($folder in $FromDir_SubDir){
@@ -120,7 +120,7 @@ Catch{
 
 #script that uploads only files and no subfolders
 $FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -File
-$ftp = "ftp://#############@192.168.1.179/"
+$ftp = "ftp://###@192.168.1.179/"
 
 Try{
     foreach ($file in $FromDir){
