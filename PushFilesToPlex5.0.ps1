@@ -109,9 +109,6 @@ Try{
             $res.Close()
         }
     }
-    if ($folderEmailList.Length -ne 0){
-        sendEmail($folderEmailList)
-    }
 }
 Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
@@ -146,12 +143,13 @@ Try{
             Remove-Item $file.FullName
         }
     }
-    if ($folderEmailList.Length -ne 0){
-        sendEmail($folderEmailList)
-    }
 }
 Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
+}
+
+if ($folderEmailList.Length -ne 0){
+    sendEmail($folderEmailList)
 }
 
 $stopwatch.Stop()
