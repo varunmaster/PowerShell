@@ -2,7 +2,7 @@
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 $count = 0
 $totalSize = 0
-$folderEmailList = @()
+$movieEmailList = @() | ConvertTo-Html
 function LogWrite($logString)
 {
    Add-content $Logfile -value $logString 
@@ -31,7 +31,7 @@ function checkIfFileAlreadyOnFTP ($folder){
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": FINISHED CHECKING IF ON FTP")
 }
 
-function sendEmail ($folderEmailList){
+function sendEmail ($movieEmailList){
     $pw = '###' | ConvertTo-SecureString -Force -AsPlainText
     $creds = New-Object System.Management.Automation.PsCredential("###", $pw)
     $scriptBlock = {
@@ -39,11 +39,11 @@ function sendEmail ($folderEmailList){
         $to = @("###")
         $from = '###'
         $sub = 'New Movie Uploaded'
-        $body = "Movie(s) uploaded: " + $args[0]
+        $body = "Movie(s) uploaded: <ul> </br>" + $args[0] + "</ul>"
 
         Send-MailMessage -SMTPServer $server -To $to -From $from -Subject $sub -Body $body
     }
-    Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList ($folderEmailList -join ", ")
+    Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList ($movieEmailList -join ", ")
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": EMAIL SENT")
     #thanks to ralphkyttle = https://blogs.technet.microsoft.com/ralphkyttle/2015/06/04/powershell-passing-parameters-as-variables-using-remote-management-and-invoke-command/
 }
@@ -88,7 +88,7 @@ Try{
             $makeDir.Method = [System.Net.WebRequestMethods+FTP]::MakeDirectory
             $makeDir.GetResponse()
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CREATED FOLDER ON FTP: <$folder>")
-            $folderEmailList += $folder.Name
+            $movieEmailList += "<li>" + $folder.Name + "</li>"
 
             Copy-Item $folder.FullName -Destination "T:\Movies\" -Recurse -Force
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FOLDER to BACKUP DRIVE T:\Movies: '<$($folder.Name)>'")
@@ -138,7 +138,7 @@ Try{
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: <$($file)>")
             $webclient.UploadFile($uri, $file.FullName)
 
-            $folderEmailList += $file
+            $movieEmailList += $file
             $count += 1
             Remove-Item $file.FullName
         }
@@ -148,8 +148,8 @@ Catch{
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
 }
 
-if ($folderEmailList.Length -ne 0){
-    sendEmail($folderEmailList)
+if ($movieEmailList.Length -ne 0){
+    sendEmail($movieEmailList)
 }
 
 $stopwatch.Stop()
