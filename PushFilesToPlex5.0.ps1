@@ -2,7 +2,7 @@
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 $count = 0
 $totalSize = 0
-$movieEmailList = @() | ConvertTo-Html
+$movieEmailList = @() 
 function LogWrite($logString)
 {
    Add-content $Logfile -value $logString 
