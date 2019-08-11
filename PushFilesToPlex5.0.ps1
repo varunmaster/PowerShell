@@ -41,7 +41,7 @@ function sendEmail ($movieEmailList){
         $sub = 'New Movie Uploaded'
         $body = "Movie(s) uploaded: <ul> </br>" + $args[0] + "</ul>"
 
-        Send-MailMessage -SMTPServer $server -To $to -From $from -Subject $sub -Body $body
+        Send-MailMessage -SMTPServer $server -To $to -From $from -Subject $sub -Body $body -BodyAsHtml
     }
     Invoke-Command -ComputerName '192.168.1.179' -ScriptBlock $scriptBlock -Credential $creds -ArgumentList ($movieEmailList -join ", ")
     LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": EMAIL SENT")
