@@ -1,4 +1,4 @@
-﻿$Logfile = "C:\Logs\$($MyInvocation.MyCommand.Name).log"
+﻿$LogFile = "$env:LOGFILE/"+"$($MyInvocation.MyCommand.Name).log"
 function LogWrite($logString)
 {
    Add-content $Logfile -value ((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $logString ")
