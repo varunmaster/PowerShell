@@ -5,8 +5,9 @@ function LogWrite($logString)
 }
 
 function getName($movie){
-    $name = ([regex]::Matches("$movie",'[a-zA-Z]+\s\d?')).Value[0] #wholeword,space,optional number
-    return $name
+    $name = $movie.split(" ") 
+    $name1 = (($name[0..($name.Length - 2)]) -join " ") -replace " ","+"
+    return $name1
 }
 
 function getYear($movie){
