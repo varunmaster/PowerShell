@@ -16,7 +16,7 @@ function getYear($movie){
 }
 
 $movieList = @(gci -Path 'C:\Data\Movies' -Directory | ? {$_.CreationTime.ToString("MM/dd/yyyy") -le ((Get-Date).AddDays(-$prevDays).ToString("MM/dd/yyyy"))}).Name
-$token = Get-Content "/Users/varun/Desktop/token.txt"
+$token = Get-Content (join-path $env:USERPATH -childpath "/token.txt")
 $url = "http://www.omdbapi.com/?apikey=$($token)&"
 $movieListEmail = "<h1>Movies:</h1><br/><br/>"
 $movieListEmail += "<table style=`"width:100%`">"
@@ -28,6 +28,9 @@ foreach($movie in $movieList){
         LogWrite("Already sent 5 API requests...Sleeping for 30 seconds")
         Start-Sleep -Seconds 30
     }else {
+        LogWrite("Currently on movie number $($movieCnt) - $($movie) <--> Params:")
+        LogWrite(getName($movie))
+        LogWrite(getYear($movie))
         $result = Invoke-RestMethod -Method Get -Uri $url+"t="+getName($movie)+"&y="+getYear($movie)
         LogWrite("Sending API GET") 
         if($result.Length -lt 1){
