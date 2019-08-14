@@ -1,4 +1,11 @@
-﻿$LogFile = "$env:LOGFILE/"+"$($MyInvocation.MyCommand.Name).log"
+﻿$LogFile =  (Join-Path $env:LOGFILE -ChildPath "$($MyInvocation.MyCommand.Name).log")
+$movieList = @(gci -Path 'C:\Data\Movies' -Directory | ? {$_.CreationTime.ToString("MM/dd/yyyy") -gt ((Get-Date).AddDays(-7).ToString("MM/dd/yyyy"))}).Name
+$token = Get-Content (join-path $env:USERPATH -childpath "/token.txt")
+$url = "http://www.omdbapi.com/?apikey=$($token)&"
+$movieListEmail = "<h1>Movies:</h1><br/><br/>"
+$movieListEmail += "<table style=`"width:100%`">"
+$movieCnt=0
+
 function LogWrite($logString)
 {
    Add-content $Logfile -value ((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $logString ")
@@ -15,12 +22,12 @@ function getYear($movie){
     return $year
 }
 
-$movieList = @(gci -Path 'C:\Data\Movies' -Directory | ? {$_.CreationTime.ToString("MM/dd/yyyy") -le ((Get-Date).AddDays(-$prevDays).ToString("MM/dd/yyyy"))}).Name
-$token = Get-Content (join-path $env:USERPATH -childpath "/token.txt")
-$url = "http://www.omdbapi.com/?apikey=$($token)&"
-$movieListEmail = "<h1>Movies:</h1><br/><br/>"
-$movieListEmail += "<table style=`"width:100%`">"
-$movieCnt=0
+function uriBuilder($name){
+    $movieName=getName($name)
+    $year=getYear($name)
+    $uri = $url+"t="+$movieName+"&y="+$year
+    return $uri
+}
 
 foreach($movie in $movieList){
     $movieCnt++
@@ -31,9 +38,10 @@ foreach($movie in $movieList){
         LogWrite("Currently on movie number $($movieCnt) - $($movie) <--> Params:")
         LogWrite(getName($movie))
         LogWrite(getYear($movie))
-        $result = Invoke-RestMethod -Method Get -Uri $url+"t="+getName($movie)+"&y="+getYear($movie)
-        LogWrite("Sending API GET") 
-        if($result.Length -lt 1){
+        $result = Invoke-RestMethod -Method Get -Uri "$url+uriBuilder($movie)"
+        LogWrite("Sending API GET...URI is")
+        LogWrite(uriBuilder($movie)) 
+        if($result.Response -ne "True"){
             LogWrite("Could not get info...trying next movie")
             continue
         }else {
