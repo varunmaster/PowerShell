@@ -5,8 +5,8 @@ $url = "http://www.omdbapi.com/?apikey=$($token)&t="
 $movieListEmail = "<h1>Movies:</h1><br/><br/>"
 $movieListEmail += "<table style=`"width:100%`">"
 $movieCnt=0
-$getNameFromFunc
-$getYearFromFunc
+$global:getNameFromFunc
+$global:getYearFromFunc
 
 function LogWrite($logString)
 {
@@ -16,12 +16,14 @@ function LogWrite($logString)
 function getName($movie){
     $name = $movie.split(" ") 
     $name1 = (($name[0..($name.Length - 2)]) -join " ") -replace " ","+"
-    return $getNameFromFunc = $name1
+    $global:getNameFromFunc = $name1
+    return $global:getNameFromFunc
 }
 
 function getYear($movie){
     $year = ([regex]::Matches("$movie",'([0-9]{4})')).Value
-    return $getYearFromFunc = $year
+    $global:getYearFromFunc = $year
+    return $global:getYearFromFunc
 }
 
 foreach($movie in $movieList){
@@ -31,15 +33,15 @@ foreach($movie in $movieList){
         Start-Sleep -Seconds 30
     }else {
         LogWrite("Currently on movie number $($movieCnt) - $($movie) <--> Params:")
-        LogWrite(getName($movie))
-        LogWrite(getYear($movie))
+        #LogWrite(getName($movie))
+        #LogWrite(getYear($movie))
         getName($movie)
         getYear($movie)
-        $result = Invoke-RestMethod -Method Get -Uri $url+$getNameFromFunc+"y="+$getYearFromFunc
-        LogWrite("URI req: "+$url+$getNameFromFunc+"y="+$getYearFromFunc)
-
+        $result = Invoke-RestMethod -Method Get -Uri ("$url$($global:getNameFromFunc)"+"&y=$($global:getYearFromFunc)")
+        
+        LogWrite("$url$($global:getNameFromFunc)"+"&y=$($global:getYearFromFunc)")
         LogWrite("Result is:\n"+$result)
-        #LogWrite(uriBuilder($movie))
+        
         if($result.Response -ne "True"){
             LogWrite("Could not get info...trying next movie")
             continue
@@ -51,6 +53,7 @@ foreach($movie in $movieList){
             $movieListEmail += "<li><b>Runtime:</b> $($result.Runtime)</li>"
             $movieListEmail += "<li><b>Actors:</b> $($result.Actors)</li>"
             $movieListEmail += "<li><b>Plot:</b> $($result.Plot)</li>"
+            $movieListEmail += "<li>------------------------------------------------------------------------------</li>"
             $movieListEmail += "</td></tr>"
             LogWrite($movieListEmail)
         }
@@ -58,6 +61,6 @@ foreach($movie in $movieList){
 }
 
 $movieListEmail += "</table><br/><br/>"
-LogWrite($movieListEmail)
-#Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates this week" -Body $movieListEmail -BodyAsHtml
+#LogWrite($movieListEmail)
+Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates this week" -Body $movieListEmail -BodyAsHtml
 LogWrite("EMAIL SENT")
