@@ -62,5 +62,5 @@ foreach($movie in $movieList){
 
 $movieListEmail += "</table><br/><br/>"
 #LogWrite($movieListEmail)
-Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates this week" -Body $movieListEmail -BodyAsHtml
+Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates from "$(Get-Date).AddDays(-7).ToString('MM/dd/yyyy')" to "$(Get-Date).ToString('MM/dd/yyyy')"" -Body $movieListEmail -BodyAsHtml
 LogWrite("EMAIL SENT")
