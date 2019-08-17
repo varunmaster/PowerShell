@@ -1,10 +1,12 @@
-﻿$LogFile =  (Join-Path $env:LOGFILE -ChildPath "$($MyInvocation.MyCommand.Name).log")
+﻿$LogFile = (Join-Path $env:LOGFILE -ChildPath "$($MyInvocation.MyCommand.Name).log")
 $movieList = @(gci -Path 'C:\Data\Movies' -Directory | ? {$_.CreationTime.ToString("MM/dd/yyyy") -gt ((Get-Date).AddDays(-7).ToString("MM/dd/yyyy"))}).Name
 $token = Get-Content (join-path $env:USERPATH -childpath "/token.txt")
-$url = "http://www.omdbapi.com/?apikey=$($token)&"
+$url = "http://www.omdbapi.com/?apikey=$($token)&t="
 $movieListEmail = "<h1>Movies:</h1><br/><br/>"
 $movieListEmail += "<table style=`"width:100%`">"
 $movieCnt=0
+$getNameFromFunc
+$getYearFromFunc
 
 function LogWrite($logString)
 {
@@ -14,19 +16,12 @@ function LogWrite($logString)
 function getName($movie){
     $name = $movie.split(" ") 
     $name1 = (($name[0..($name.Length - 2)]) -join " ") -replace " ","+"
-    return $name1
+    return $getNameFromFunc = $name1
 }
 
 function getYear($movie){
     $year = ([regex]::Matches("$movie",'([0-9]{4})')).Value
-    return $year
-}
-
-function uriBuilder($name){
-    $movieName=getName($name)
-    $year=getYear($name)
-    $uri = $url+"t="+$movieName+"&y="+$year
-    return $uri
+    return $getYearFromFunc = $year
 }
 
 foreach($movie in $movieList){
@@ -38,25 +33,31 @@ foreach($movie in $movieList){
         LogWrite("Currently on movie number $($movieCnt) - $($movie) <--> Params:")
         LogWrite(getName($movie))
         LogWrite(getYear($movie))
-        $result = Invoke-RestMethod -Method Get -Uri "$url+uriBuilder($movie)"
-        LogWrite("Sending API GET...URI is")
-        LogWrite(uriBuilder($movie)) 
+        getName($movie)
+        getYear($movie)
+        $result = Invoke-RestMethod -Method Get -Uri $url+$getNameFromFunc+"y="+$getYearFromFunc
+        LogWrite("URI req: "+$url+$getNameFromFunc+"y="+$getYearFromFunc)
+
+        LogWrite("Result is:\n"+$result)
+        #LogWrite(uriBuilder($movie))
         if($result.Response -ne "True"){
             LogWrite("Could not get info...trying next movie")
             continue
         }else {
             LogWrite("Got response...retrieving info")
-            $movieListEmail += "<tr><td><img src=`"$($result.Poster)`"</td>"
+            $movieListEmail += "<tr><td><img src=`"$($result.Poster)`"></td>"
             $movieListEmail += "<td><li>$($result.Title) ($($result.Year))</li>"
-            $movieListEmail += "<td><li><i>Released:</i> $($result.Released)</li>"
-            $movieListEmail += "<td><li><i>Runtime:</i> $($result.Runtime)</li>"
-            $movieListEmail += "<td><li><i>Actors:</i> $($result.Actors)</li>"
-            $movieListEmail += "<td><li><i>Plot:</i> $($result.Plot)</li>"
+            $movieListEmail += "<li><b>Released:</b> $($result.Released)</li>"
+            $movieListEmail += "<li><b>Runtime:</b> $($result.Runtime)</li>"
+            $movieListEmail += "<li><b>Actors:</b> $($result.Actors)</li>"
+            $movieListEmail += "<li><b>Plot:</b> $($result.Plot)</li>"
+            $movieListEmail += "</td></tr>"
+            LogWrite($movieListEmail)
         }
     }
 }
 
-$movieListEmail += "</tr></table><br/><br/>"
-
-Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates this week" -Body $movieListEmail -BodyAsHtml
+$movieListEmail += "</table><br/><br/>"
+LogWrite($movieListEmail)
+#Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates this week" -Body $movieListEmail -BodyAsHtml
 LogWrite("EMAIL SENT")
