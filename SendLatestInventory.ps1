@@ -7,6 +7,8 @@ $movieListEmail += "<table style=`"width:100%`">"
 $movieCnt=0
 $global:getNameFromFunc
 $global:getYearFromFunc
+$startDate = (Get-Date).AddDays(-7).ToString("MM/dd/yyyy")
+$endDate = (Get-Date).ToString('MM/dd/yyyy')
 
 function LogWrite($logString)
 {
@@ -62,5 +64,5 @@ foreach($movie in $movieList){
 
 $movieListEmail += "</table><br/><br/>"
 #LogWrite($movieListEmail)
-Send-MailMessage -SMTPServer '###' -To @('###') -From '###' -Subject "Library Updates from "$(Get-Date).AddDays(-7).ToString('MM/dd/yyyy')" to "$(Get-Date).ToString('MM/dd/yyyy')"" -Body $movieListEmail -BodyAsHtml
+Send-MailMessage -SMTPServer '###' -To @("###") -From '###' -Subject "Library Updates from $($startDate) to $($endDate)" -Body $movieListEmail -BodyAsHtml
 LogWrite("EMAIL SENT")
