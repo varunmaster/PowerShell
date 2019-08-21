@@ -50,22 +50,29 @@ function sendEmail ($movieEmailList){
 
 #renaming all files that have a "[" or "]" in the name as powershell is stupid and doesn't like it when uploading files
 $dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
-foreach($item in $dir){
-    Rename-Item -LiteralPath $item.FullName -NewName ($item.name -replace "[\[\]]",'' `
-                                                                 -replace "1080p",'' `
-                                                                 -replace "1080",'' `
-                                                                 -replace "webrip",'' `
-                                                                 -replace "bluray",'' `
-                                                                 -replace "yts.am",'' `
-                                                                 -replace "yify",'' `
-                                                                 -replace "rar.bg",'' `
-                                                                 -replace "x264",'' `
-                                                                 -replace "yts.ag",'' `
-                                                                 -replace "720p",'' `
-                                                                 -replace "720",'' `
-                                                                 -replace "yts.lt",'' `
-                                                                 ) -ErrorAction Continue
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
+Try{
+    foreach($item in $dir){
+        Rename-Item -LiteralPath $item.FullName -NewName ($item.name -replace "[\[\]]",'' `
+                                                                     -replace "1080p",'' `
+                                                                     -replace "1080",'' `
+                                                                     -replace "webrip",'' `
+                                                                     -replace "bluray",'' `
+                                                                     -replace "yts.am",'' `
+                                                                     -replace "yify",'' `
+                                                                     -replace "rar.bg",'' `
+                                                                     -replace "x264",'' `
+                                                                     -replace "yts.ag",'' `
+                                                                     -replace "720p",'' `
+                                                                     -replace "720",'' `
+                                                                     -replace "yts.lt",'' `
+                                                                     -replace "\.BluRay\.H264\.AAC-RARBG",''`
+                                                                     -replace "\.",' '`
+                                                                     ) -ErrorAction Continue
+        LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
+    }
+}
+Catch{
+    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
 }
 
 #script that uploads entire folders and its sub-files
