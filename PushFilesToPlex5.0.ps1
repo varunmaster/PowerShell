@@ -49,7 +49,6 @@ function sendEmail ($movieEmailList){
 }
 
 #renaming all files that have a "[" or "]" in the name as powershell is stupid and doesn't like it when uploading files
-$dir = @(Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -Directory)
 Try{
     foreach($item in $dir){
         Rename-Item -LiteralPath $item.FullName -NewName ($item.name -replace "[\[\]]",'' `
@@ -65,8 +64,8 @@ Try{
                                                                      -replace "720p",'' `
                                                                      -replace "720",'' `
                                                                      -replace "yts.lt",'' `
-                                                                     -replace "\.BluRay\.H264\.AAC-RARBG",''`
                                                                      -replace "\.",' '`
+                                                                     -replace "   H264 AAC-RARBG",''`
                                                                      ) -ErrorAction Continue
         LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": RENAMED ITEM: '<$item>'")
     }
