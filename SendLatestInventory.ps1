@@ -1,9 +1,9 @@
 ﻿$LogFile = (Join-Path $env:LOGFILE -ChildPath "$($MyInvocation.MyCommand.Name).log")
-$movieList = @(gci -Path 'C:\Data\Movies' -Directory | ? {$_.CreationTime.ToString("MM/dd/yyyy") -gt ((Get-Date).AddDays(-7).ToString("MM/dd/yyyy"))}).Name
+$movieList = @(gci -Path 'C:\Data\Movies' -Directory | ? {(Get-Date $_.CreationTime).ToString("yyyy/MM/dd") -gt (Get-Date).AddDays(-7).ToString("yyyy/MM/dd")}).Name
 $token = Get-Content (join-path $env:USERPATH -childpath "/token.txt")
 $url = "http://www.omdbapi.com/?apikey=$($token)&t="
 $movieListEmail = "<h1>Movies:</h1><br/><br/>"
-$movieListEmail += "<table style=`"width:100%`">"
+$movieListEmail += "<table style=`"width:100%`" border=`"2px solid black`">"
 $movieCnt=0
 $global:getNameFromFunc
 $global:getYearFromFunc
@@ -28,8 +28,9 @@ function getYear($movie){
     return $global:getYearFromFunc
 }
 
+LogWrite("<-----------------------------------Start----------------------------------->")
+
 foreach($movie in $movieList){
-    $movieCnt++
     if($movieCnt -gt 1 -and $movieCnt%5 -eq 0){
         LogWrite("Already sent 5 API requests...Sleeping for 30 seconds")
         Start-Sleep -Seconds 30
@@ -50,19 +51,21 @@ foreach($movie in $movieList){
         }else {
             LogWrite("Got response...retrieving info")
             $movieListEmail += "<tr><td><img src=`"$($result.Poster)`"></td>"
-            $movieListEmail += "<td><li>$($result.Title) ($($result.Year))</li>"
-            $movieListEmail += "<li><b>Released:</b> $($result.Released)</li>"
-            $movieListEmail += "<li><b>Runtime:</b> $($result.Runtime)</li>"
-            $movieListEmail += "<li><b>Actors:</b> $($result.Actors)</li>"
-            $movieListEmail += "<li><b>Plot:</b> $($result.Plot)</li>"
+            $movieListEmail += "<td><li><b>$($result.Title) ($($result.Year))</b></li>"
+            $movieListEmail += "<li><i>Released:</i> $($result.Released)</li>"
+            $movieListEmail += "<li><i>Runtime:</i> $($result.Runtime)</li>"
+            $movieListEmail += "<li><i>Actors:</i> $($result.Actors)</li>"
+            $movieListEmail += "<li><i>Plot:</i> $($result.Plot)</li>"
             $movieListEmail += "<li>------------------------------------------------------------------------------</li>"
             $movieListEmail += "</td></tr>"
             LogWrite($movieListEmail)
         }
     }
+    $movieCnt++
 }
 
 $movieListEmail += "</table><br/><br/>"
 #LogWrite($movieListEmail)
 Send-MailMessage -SMTPServer '###' -To @("###") -From '###' -Subject "Library Updates from $($startDate) to $($endDate)" -Body $movieListEmail -BodyAsHtml
 LogWrite("EMAIL SENT")
+LogWrite("<------------------------------------End------------------------------------>")
