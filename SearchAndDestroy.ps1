@@ -8,7 +8,7 @@ Param (
 Write-Host "Here are the files that will be destroyed:" -ForegroundColor Yellow
 $movieList = @(Get-ChildItem -Path $drive -Filter *$($name)* -Directory)
 $movieList.ForEach({Write-Host $_.FullName -ForegroundColor Red})
-Write-Host "Do you want to run in bulk mode or individual mode? B/I" -ForegroundColor Yellow
+Write-Host "Do you want to run in bulk mode or individual mode (type exit to exit)? B/I" -ForegroundColor Yellow
 $bulk = Read-Host
 
 if ($bulk.ToLower() -eq 'b') {
@@ -35,7 +35,9 @@ if ($bulk.ToLower() -eq 'b') {
             continue
         }
     }
-} 
+} elseif ($bulk.ToLower() -eq "exit") {
+    exit 0
+}
 else {
     exit 0
 }
