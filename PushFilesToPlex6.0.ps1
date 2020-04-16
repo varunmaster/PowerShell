@@ -12,7 +12,8 @@ function LogWrite($logString)
 LogWrite("`
 #######################################################################`
 ######################           Start           ######################`
-#######################################################################")
+#######################################################################`
+")
 LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": Script started")
 
 function checkIfFileAlreadyOnFTP ($folder){
@@ -145,40 +146,6 @@ Try{
             $res = $makeDir.GetResponse()
             LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": CLOSING FTP CONNECTION")
             $res.Close()
-        }
-    }
-}
-Catch{
-    LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": ERROR OCCURRED: $_.Exception.Message")
-}
-
-
-#script that uploads only files and no subfolders
-$FromDir = Get-ChildItem "C:\Users\vm305\Desktop\moviesToUpload" -File
-$ftp = "ftp://###:###@###/"
-
-Try{
-    foreach ($file in $FromDir){
-
-        if ((checkIfFileAlreadyOnFTP -folder $file) -eq $true){
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": FILE ALREADY ON FTP...SKIPPING AND REMOVING '<$file>'")
-            rmdir $file.FullName -Force -Recurse
-            continue
-        }else{
-            Copy-Item $file.fullname -Destination "T:\Movies" -Force
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": COPIED FILE to BACKUP drive: '<$($file.Name)>'")
- 
-            $ftp1 = $ftp + "/$($file.Name)"
-   
-            $webclient = New-Object -TypeName System.Net.WebClient
-            $uri = New-Object -TypeName System.Uri -ArgumentList $ftp1
-
-            LogWrite((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": SUCCESSFULLY UPLOADED FILE to FTP: <$($file)>")
-            $webclient.UploadFile($uri, $file.FullName)
-
-            $movieEmailList += "<li>" + $file + "</li>"
-            $count += 1
-            Remove-Item $file.FullName
         }
     }
 }
