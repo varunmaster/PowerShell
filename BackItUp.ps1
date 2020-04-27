@@ -79,10 +79,6 @@ function backupMiscFiles(){
 
 LogWrite("<-----------Running Inventory----------->")
 C:\Users\vm305\Desktop\Scripts1\inventory.ps1
-LogWrite("<-----------Copying Inventory----------->")
-Copy-Item -Path T:\FileInventory.txt -Destination E:\
-Copy-Item -Path T:\MovieInventory.txt -Destination E:\
-Copy-Item -Path T:\ShowInventory.txt -Destination E:\
 LogWrite("<-----------Going to start backing up Movies----------->")
 backupMovies
 LogWrite("<-----------Going to start backing up Scripts----------->")
