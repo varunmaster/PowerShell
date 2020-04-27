@@ -9,14 +9,18 @@ function LogWrite($logString)
    Add-content $Logfile -value ((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $logString ")
    Write-Host $logString
 }
-LogWrite("<-----------------------------------Start----------------------------------->")
+LogWrite("`
+#######################################################################`
+######################           Start           ######################`
+#######################################################################`
+")
 
 function backupMovies(){
     $moviesToBackup = (gci T:\Movies\ | ? {$_.LastWriteTime -gt (Get-Date).AddDays(-14)} ).FullName
     Try{
         foreach ($movie in $moviesToBackup){
-            Copy-Item -Path $movie -Destination "E:\Movies\" -Force -Recurse
             LogWrite("Copied Movie <$($movie)> to E:\Movies\")
+            Copy-Item -Path $movie -Destination "E:\Movies\" -Force -Recurse
         }
     }
     Catch{
@@ -28,10 +32,10 @@ function backupScripts(){
     $scriptsToBackup = (gci C:\Users\vm305\Desktop\Scripts1 -Recurse).FullName 
     Try{
         foreach ($script in $scriptsToBackup){
-            Copy-Item -Path $script -Destination "T:\Files\Scripts1\" -Force -Recurse
             LogWrite("Copied Script <$($script)> to T:\Files\Scripts1\")
-            Copy-Item -Path $script -Destination "E:\Files\Scripts1\" -Force -Recurse
+            Copy-Item -Path $script -Destination "T:\Files\Scripts1\" -Force -Recurse
             LogWrite("Copied Script <$($script)> to E:\Files\Scripts1")
+            Copy-Item -Path $script -Destination "E:\Files\Scripts1\" -Force -Recurse
         }
     }
     Catch{
@@ -43,10 +47,10 @@ function backupGitHub(){
     $GitHubBackup = (gci C:\Users\vm305\Documents\GitHub -Directory -Recurse | ? {$_.LastWriteTime -gt (Get-Date).AddDays(-14)}).FullName
     Try{
         foreach($item in $GitHubBackup){
+            LogWrite("Copied Code <$($item)> to T:\Files\Github\")
             Copy-Item $item -Destination "T:\Files\GitHub\" -Force -Recurse
-            LogWrite("Copied Script <$($item)> to T:\Files\Github\")
+            LogWrite("Copied Code <$($item)> to E:\Files\GitHub\")
             Copy-Item -Path $item -Destination "E:\Files\GitHub\" -Force -Recurse
-            LogWrite("Copied Script <$($item)> to E:\Files\GitHub\")
         }
     }
     Catch{
@@ -59,12 +63,12 @@ function backupMiscFiles(){
     $kee = (gci D:\KeePass -Recurse).FullName
     Try{
         foreach($item in $iso){
+            LogWrite("Copied File <$($item)> to T:\Files\ISOs\")
             Copy-Item $item -Destination "T:\Files\ISOs\" -Force -Recurse
-            LogWrite("Copied Script <$($item)> to T:\Files\ISOs\")
         }
         foreach($item in $kee){
+            LogWrite("Copied File <$($item)> to T:\Files\KeePass")
             Copy-Item $item -Destination "T:\Files\KeePass" -Force -Recurse
-            LogWrite("Copied Script <$($item)> to T:\Files\KeePass")
         }
         
     }
@@ -73,15 +77,25 @@ function backupMiscFiles(){
     }
 }
 
-LogWrite("Going to start backing up Movies")
+LogWrite("<-----------Running Inventory----------->")
+C:\Users\vm305\Desktop\Scripts1\inventory.ps1
+LogWrite("<-----------Copying Inventory----------->")
+Copy-Item -Path T:\FileInventory.txt -Destination E:\
+Copy-Item -Path T:\MovieInventory.txt -Destination E:\
+Copy-Item -Path T:\ShowInventory.txt -Destination E:\
+LogWrite("<-----------Going to start backing up Movies----------->")
 backupMovies
-LogWrite("Going to start backing up Scripts")
+LogWrite("<-----------Going to start backing up Scripts----------->")
 backupScripts
-LogWrite("Going to start backing up GitHub")
+LogWrite("<-----------Going to start backing up GitHub----------->")
 backupGitHub
-LogWrite("Going to start backing up Misc files")
+LogWrite("<-----------Going to start backing up Misc files----------->")
 backupMiscFiles
 
 $stopwatch.Stop()
 LogWrite("Total time: <$($stopwatch.Elapsed.TotalSeconds)>")
-LogWrite("<------------------------------------End------------------------------------>")
+LogWrite("`
+#######################################################################`
+#######################           End           #######################`
+#######################################################################`
+")
