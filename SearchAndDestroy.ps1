@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 Param (
-    [Parameter(Mandatory=$false)] $drive = 'T:\Movies',
+    [Parameter(Mandatory=$false)] $drive = 'C:\Data\Movies',
     [Parameter(Mandatory=$true)] $name
 )
 

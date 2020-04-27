@@ -56,7 +56,6 @@ foreach($movie in $movieList){
             $movieListEmail += "<li><i>Runtime:</i> $($result.Runtime)</li>"
             $movieListEmail += "<li><i>Actors:</i> $($result.Actors)</li>"
             $movieListEmail += "<li><i>Plot:</i> $($result.Plot)</li>"
-            $movieListEmail += "<li>------------------------------------------------------------------------------</li>"
             $movieListEmail += "</td></tr>"
             LogWrite($movieListEmail)
         }
