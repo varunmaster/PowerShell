@@ -1,29 +1,23 @@
-﻿[CmdletBinding()]
-Param (
-    [Parameter(Mandatory=$false)] $drive = 'C:\Data\Movies',
-    [Parameter(Mandatory=$true)] $name
-)
-
-
-Write-Host "Here are the files that will be destroyed:" -ForegroundColor Yellow
+﻿Write-Host "Here are the files that will be destroyed:" -ForegroundColor Yellow
 $movieList = @(Get-ChildItem -Path $drive -Filter *$($name)* -Directory)
-$movieList.ForEach({Write-Host $_.FullName -ForegroundColor Red})
+$movieList.ForEach({Write-Host $_.FullName "-------" $_.LastWriteTime -ForegroundColor Red})
 Write-Host "Do you want to run in bulk mode or individual mode (type exit to exit)? B/I" -ForegroundColor Yellow
 $bulk = Read-Host
 
 if ($bulk.ToLower() -eq 'b') {
     Write-Host "Confirm again if this list should be deleted (Y/N):" -ForegroundColor Yellow
-    $movieList.ForEach({Write-Host $_.FullName -ForegroundColor Red})
+    $movieList.ForEach({Write-Host $_.FullName "-------" $_.LastWriteTime -ForegroundColor Red})
     $del = Read-Host
     if ($del.ToLower() -eq 'y') {
         $movieList.ForEach({Remove-Item -Path $_.FullName -Recurse -Force})
+        Write-Host "Deleted all folders" -ForegroundColor Magenta
     } 
     else {
         exit 0
     }
 } elseif ($bulk.ToLower() -eq 'i') {
     foreach ($movie in $movieList) {
-        Write-Host $movie.FullName -ForegroundColor Red
+        Write-Host $movie.FullName "-------" $movie.LastWriteTime -ForegroundColor Red
         Write-Host "Delete this folder? (Y/N)" -ForegroundColor Yellow
         $confirm = Read-Host
         if ($confirm.ToLower() -eq 'y') {
