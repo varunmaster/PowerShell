@@ -1,5 +1,5 @@
 # TODO:
-# Copy the same logic from movie for C:\Scripts and T:\Files\KeePass and T:\Files\ISOs
+# Copy the same logic from movie for T:\Files\KeePass and T:\Files\ISOs
 # Add the flags to skip each of the parts
 [CmdletBinding()]
 Param (
@@ -11,7 +11,15 @@ Param (
 $stopwatch = [system.diagnostics.stopwatch]::StartNew()
 $LogFile = (Join-Path "C:\Logs\" -ChildPath "$($MyInvocation.MyCommand.Name).log")
 
-function LogWrite($logString, $color) {
+function LogWrite {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]$logString,
+
+        [Parameter(Mandatory)]
+        [string]$color
+    )
     Add-content $Logfile -value ((Get-Date).toString("yyyy/MM/dd HH:mm:ss") + ": $logString")
     Write-Host $logString -ForegroundColor $color
 }
@@ -50,8 +58,7 @@ function BackUpMovies() {
                 if (($movie -notin $offSiteBackUpsAllMovies) -and ($currMovieToBackupLastWriteTime -ne $offSiteBackUpsAllMoviesObj[$($movie)])) {
                     LogWrite "Copying Movie <$($movie)> to $($testE)" "Green"
                     Copy-Item -Path "$($testT)\$($movie)" -Destination "$($testE)\" -Recurse -Force
-                }
-                else {
+                } else {
                     LogWrite "Movie <$($movie)> already backed up and/or the LastWriteTime are equal" "Yellow"
                 }
             }
@@ -59,17 +66,36 @@ function BackUpMovies() {
         Catch {
             LogWrite "ERROR OCCURRED: $_.Exception.Message" "Red"
         }
-    }
-    else {
+    } else {
         LogWrite "Skipping Movies because flag was true for skipMovies: $($skipMovies)" "Yellow"
     }
 }
 
 function BackUpScripts() {
     if ($skipScripts -eq $false) {
-        #logic 
+        $offSiteBackUpsAllScripts = @((Get-ChildItem -Path 'E:\Scripts').Name)
+        #$offSiteBackUpsAllScripts = @((Get-ChildItem -Path 'C:\DevStuff\Data\E').Name) 
+        $offSiteBackUpsAllScriptsObj = createObjOfNameAndLastWriteTime $offSiteBackUpsAllScripts "E:\Scripts" 
+        #$offSiteBackUpsAllScriptsObj = createObjOfNameAndLastWriteTime $offSiteBackUpsAllScripts "C:\DevStuff\Data\E"
+
+        $AllScriptsToBackup = @(((Get-ChildItem -Path "C:\Scripts").Name))
+        Try {
+            foreach ($script in $AllScriptsToBackup) {
+                $currScriptToBackupLastWriteTime = @(Get-Item -Path "C:\Scripts\$($script)").LastWriteTime.ToString('yyyy/MM/dd')
+                if (($script -notin $offSiteBackUpsAllScripts) -and ($currScriptToBackupLastWriteTime -ne $offSiteBackUpsAllScriptsObj[$($script)])) {
+                    LogWrite "Copying Script <$($script)> to E:\Scripts\" "Green"
+                    Copy-Item -Path "C:\Scripts\$($script)" -Destination "E:\Scripts\" -Recurse -Force
+                    #Copy-Item -Path "C:\Scripts\$($script)" -Destination "C:\DevStuff\Data\E" -Recurse -Force 
+                } else {
+                    LogWrite "Script <$($script)> already backed up and/or the LastWriteTime are equal" "Yellow"
+                }
+            }
+        }
+        Catch {
+            LogWrite "ERROR OCCURRED: $_.Exception.Message" "Red"
+        }
     } else {
-        LogWrite "Skipping Movies because flag was true for skipScripts: $($skipScripts)" "Yellow"
+        LogWrite "Skipping scripts because flag was true for skipScripts: $($skipScripts)" "Yellow"
     }
 }
 
@@ -83,6 +109,8 @@ LogWrite "<-----------Running Inventory----------->" "Cyan"
 #C:\Scripts\inventory.ps1
 LogWrite "<-----------Going to start backing up Movies----------->" "Cyan"
 BackUpMovies
+LogWrite "<-----------Going to start backing up Script----------->" "Cyan"
+BackUpScripts
 
 LogWrite "`
 #######################################################################`
