@@ -137,7 +137,7 @@ LogWrite "`
 " "Magenta"
 
 LogWrite "<-----------Running Inventory----------->" "Cyan"
-#C:\Scripts\inventory.ps1
+C:\Scripts\inventory.ps1
 LogWrite "<-----------Going to start backing up Movies----------->" "Cyan"
 BackUpMovies
 LogWrite "<-----------Going to start backing up Scripts----------->" "Cyan"
@@ -145,14 +145,15 @@ BackUpScripts
 LogWrite "<-----------Going to start backing up Misc files----------->" "Cyan"
 BackUpMiscFiles
 
-#LogWrite "<-----------Completed backing up....ejecting device----------->" "Red"
-#$device = Get-WmiObject -Class Win32_Volume | Where {$_.Name -eq "E:\"}
-#$device.Dismount($false,$false)
+LogWrite "<-----------Completed backing up....ejecting device----------->" "Red"
+$device = Get-WmiObject -Class Win32_Volume | Where {$_.Name -eq "E:\"}
+$device.Dismount($false,$false)
+
+$stopwatch.Stop()
+LogWrite "Total time: <$($stopwatch.Elapsed.TotalSeconds)>" "Magenta"
 
 LogWrite "`
 #######################################################################`
 #######################           End           #######################`
 #######################################################################`
 " "Magenta"
-$stopwatch.Stop()
-LogWrite "Total time: <$($stopwatch.Elapsed.TotalSeconds)>" "Magenta"
