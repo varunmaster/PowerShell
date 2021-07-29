@@ -1,5 +1,5 @@
 # TODO:
-# have fun
+# 
 # 
 [CmdletBinding()]
 Param (
@@ -35,7 +35,8 @@ function createObjOfNameAndLastWriteTime {
     )
     $obj = @{}
     foreach ($file in $currBackedUpFiles) {
-        $LWT = @(Get-Item -Path "$baseDirToSearch\$file").LastWriteTime.ToString('yyyy/MM/dd')
+        #Write-Host "Check this here: $($baseDirToSearch) --- $($file)"
+        $LWT = (Get-Item -Path "$baseDirToSearch\$file").LastWriteTime.ToString('yyyy/MM/dd HH:mm:ss')
         $obj.Add($file, $LWT)
     }
     return $obj
@@ -43,7 +44,8 @@ function createObjOfNameAndLastWriteTime {
 }
 
 function BackUpMovies {
-    if ($skipMovies -eq $false) { #need to check if the switch param is false bc then that means we want to back up movies
+    if ($skipMovies -eq $false) {
+        #need to check if the switch param is false bc then that means we want to back up movies
         $prodE = "E:\Movies"
         $prodT = "T:\Movies"
         $testE = "C:\DevStuff\Data\E"
@@ -54,11 +56,17 @@ function BackUpMovies {
         $AllMoviesToBackup = @(((Get-ChildItem -Path "$($prodT)" -Directory).Name))
         Try {
             foreach ($movie in $AllMoviesToBackup) {
-                $currMovieToBackupLastWriteTime = @(Get-Item -Path "$($prodT)\$($movie)").LastWriteTime.ToString('yyyy/MM/dd')
-                if (($movie -notin $offSiteBackUpsAllMovies) -and ($currMovieToBackupLastWriteTime -ne $offSiteBackUpsAllMoviesObj[$($movie)])) {
+                $currMovieToBackupLastWriteTime = (Get-Item -Path "$($prodT)\$($movie)").LastWriteTime.ToString('yyyy/MM/dd HH:mm:ss')
+                $offSiteBackUpsMovieLastWriteTime = $offSiteBackUpsAllMoviesObj[$($movie)]
+                if ( ($movie -notin $offSiteBackUpsAllMovies) -or ($currMovieToBackupLastWriteTime -ge $offSiteBackUpsMovieLastWriteTime) ) {
                     LogWrite "Copying Movie <$($movie)> to $($prodE)" "Green"
                     Copy-Item -Path "$($prodT)\$($movie)" -Destination "$($prodE)\" -Recurse -Force
-                } else {
+                    #after we copy the file, the LastWriteTime doesn't get updated so we manually set them equal to each other
+                    #if there is any update of movie in T:\Movie\<movie> the LastWriteTime will be updated and will be re-copied
+                    LogWrite "Updating the LastWriteTime of OffSiteLWT: $($(Get-Item -Path "$($prodE)\$($movie)").LastWriteTime) to T: $($(Get-Item -Path "$($prodT)\$($movie)").LastWriteTime)" "Green"
+                    (Get-Item -Path "$($prodE)\$($movie)").LastWriteTime = (Get-Item -Path "$($prodT)\$($movie)").LastWriteTime
+                }
+                else {
                     LogWrite "Movie <$($movie)> already backed up and/or the LastWriteTime are equal" "Yellow"
                 }
             }
@@ -66,27 +74,31 @@ function BackUpMovies {
         Catch {
             LogWrite "ERROR OCCURRED: $_.Exception.Message" "Red"
         }
-    } else {
+    }
+    else {
         LogWrite "Skipping Movies because flag was true for skipMovies: $($skipMovies)" "Yellow"
     }
 }
 
 function BackUpScripts {
     if ($skipScripts -eq $false) {
-        $offSiteBackUpsAllScripts = @((Get-ChildItem -Path 'E:\Scripts').Name)
+        $offSiteBackUpsAllScripts = @((Get-ChildItem -Path 'E:\Files\Scripts1\').Name)
         #$offSiteBackUpsAllScripts = @((Get-ChildItem -Path 'C:\DevStuff\Data\E').Name) 
-        $offSiteBackUpsAllScriptsObj = createObjOfNameAndLastWriteTime $offSiteBackUpsAllScripts "E:\Scripts" 
+        $offSiteBackUpsAllScriptsObj = createObjOfNameAndLastWriteTime $offSiteBackUpsAllScripts "E:\Files\Scripts1" 
         #$offSiteBackUpsAllScriptsObj = createObjOfNameAndLastWriteTime $offSiteBackUpsAllScripts "C:\DevStuff\Data\E"
 
         $AllScriptsToBackup = @(((Get-ChildItem -Path "C:\Scripts").Name))
         Try {
             foreach ($script in $AllScriptsToBackup) {
-                $currScriptToBackupLastWriteTime = @(Get-Item -Path "C:\Scripts\$($script)").LastWriteTime.ToString('yyyy/MM/dd')
+                $currScriptToBackupLastWriteTime = (Get-Item -Path "C:\Scripts\$($script)").LastWriteTime.ToString('yyyy/MM/dd HH:mm:ss')
                 if (($script -notin $offSiteBackUpsAllScripts) -and ($currScriptToBackupLastWriteTime -ne $offSiteBackUpsAllScriptsObj[$($script)])) {
-                    LogWrite "Copying Script <$($script)> to E:\Scripts\" "Green"
-                    Copy-Item -Path "C:\Scripts\$($script)" -Destination "E:\Scripts\" -Recurse -Force
+                    LogWrite "Copying Script <$($script)> to E:\Files\Scripts1\" "Green"
+                    Copy-Item -Path "C:\Scripts\$($script)" -Destination "E:\Files\Scripts1\" -Recurse -Force
                     #Copy-Item -Path "C:\Scripts\$($script)" -Destination "C:\DevStuff\Data\E" -Recurse -Force 
-                } else {
+                    LogWrite "Updating the LastWriteTime of OffSiteLWT: $($(Get-Item -Path "E:\Files\Scripts1\$($script)").LastWriteTime) to C: $($(Get-Item -Path "C:\Scripts\$($script)").LastWriteTime)" "Green"
+                    (Get-Item -Path "E:\Files\Scripts1\$($script)").LastWriteTime = (Get-Item -Path "C:\Scripts\$($script)").LastWriteTime
+                }
+                else {
                     LogWrite "Script <$($script)> already backed up and/or the LastWriteTime are equal" "Yellow"
                 }
             }
@@ -94,7 +106,8 @@ function BackUpScripts {
         Catch {
             LogWrite "ERROR OCCURRED: $_.Exception.Message" "Red"
         }
-    } else {
+    }
+    else {
         LogWrite "Skipping scripts because flag was true for skipScripts: $($skipScripts)" "Yellow"
     }
 }
@@ -109,15 +122,19 @@ function BackUpMiscFiles {
         $AllISOsToBackup = @(((Get-ChildItem -Path "T:\Files\ISOs").Name))
         Try {
             foreach ($ISO in $AllISOsToBackup) {
-                $currISOToBackupLastWriteTime = @(Get-Item -Path "T:\Files\ISOs\$($ISO)").LastWriteTime.ToString('yyyy/MM/dd')
+                $currISOToBackupLastWriteTime = (Get-Item -Path "T:\Files\ISOs\$($ISO)").LastWriteTime.ToString('yyyy/MM/dd HH:mm:ss')
                 if (($ISO -notin $offSiteBackUpsAllISOs) -and ($currISOToBackupLastWriteTime -ne $offSiteBackUpsAllISOsObj[$($ISO)])) {
                     LogWrite "Copying ISO <$($ISO)> to E:\Files\ISOs" "Green"
                     Copy-Item -Path "T:\Files\ISOs\$($ISO)" -Destination "E:\Files\ISOs" -Recurse -Force -Container
                     #Copy-Item -Path "T:\Files\ISOs\$($ISO)" -Destination "C:\DevStuff\Data\E" -Recurse -Force -Container
-                } else {
+                    LogWrite "Updating the LastWriteTime of OffSiteLWT: $((Get-Item -Path "E:\Files\ISOs\$($ISO)").LastWriteTime) to C: $($(Get-Item -Path "T:\Files\ISOs\$($ISO)").LastWriteTime)" "Green"
+                    (Get-Item -Path "E:\Files\ISOs\$($ISO)").LastWriteTime = (Get-Item -Path "T:\Files\ISOs\$($ISO)").LastWriteTime
+                }
+                else {
                     LogWrite "Script <$($ISO)> already backed up and/or the LastWriteTime are equal" "Yellow"
                 }
             }
+            #not checking for last write time or anything bc the files are relatively small so not an issue to re-copy if exists
             LogWrite "Copying KeePass files now" "Green"
             Copy-Item -Path "T:\Files\KeePass" -Destination "E:\Files\KeePass" -Recurse -Force -Container
             #Copy-Item -Path "T:\Files\KeePass" -Destination "C:\DevStuff\Data\E" -Recurse -Force -Container
@@ -125,7 +142,8 @@ function BackUpMiscFiles {
         Catch {
             LogWrite "ERROR OCCURRED: $_.Exception.Message" "Red"
         }
-    } else {
+    }
+    else {
         LogWrite "Skipping Misc files because flag was true for skipMiscFiles: $($skipMiscFiles)" "Yellow"
     }
 }
@@ -137,17 +155,13 @@ LogWrite "`
 " "Magenta"
 
 LogWrite "<-----------Running Inventory----------->" "Cyan"
-C:\Scripts\inventory.ps1
+#C:\Scripts\inventory.ps1
 LogWrite "<-----------Going to start backing up Movies----------->" "Cyan"
 BackUpMovies
 LogWrite "<-----------Going to start backing up Scripts----------->" "Cyan"
 BackUpScripts
 LogWrite "<-----------Going to start backing up Misc files----------->" "Cyan"
 BackUpMiscFiles
-
-LogWrite "<-----------Completed backing up....ejecting device----------->" "Red"
-$device = Get-WmiObject -Class Win32_Volume | Where {$_.Name -eq "E:\"}
-$device.Dismount($false,$false)
 
 $stopwatch.Stop()
 LogWrite "Total time: <$($stopwatch.Elapsed.TotalSeconds)>" "Magenta"
