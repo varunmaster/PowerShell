@@ -91,7 +91,7 @@ function BackUpScripts {
         Try {
             foreach ($script in $AllScriptsToBackup) {
                 $currScriptToBackupLastWriteTime = (Get-Item -Path "C:\Scripts\$($script)").LastWriteTime.ToString('yyyy/MM/dd HH:mm:ss')
-                if (($script -notin $offSiteBackUpsAllScripts) -and ($currScriptToBackupLastWriteTime -ne $offSiteBackUpsAllScriptsObj[$($script)])) {
+                if (($script -notin $offSiteBackUpsAllScripts) -or ($currScriptToBackupLastWriteTime -ne $offSiteBackUpsAllScriptsObj[$($script)])) {
                     LogWrite "Copying Script <$($script)> to E:\Files\Scripts1\" "Green"
                     Copy-Item -Path "C:\Scripts\$($script)" -Destination "E:\Files\Scripts1\" -Recurse -Force
                     #Copy-Item -Path "C:\Scripts\$($script)" -Destination "C:\DevStuff\Data\E" -Recurse -Force 
@@ -123,7 +123,7 @@ function BackUpMiscFiles {
         Try {
             foreach ($ISO in $AllISOsToBackup) {
                 $currISOToBackupLastWriteTime = (Get-Item -Path "T:\Files\ISOs\$($ISO)").LastWriteTime.ToString('yyyy/MM/dd HH:mm:ss')
-                if (($ISO -notin $offSiteBackUpsAllISOs) -and ($currISOToBackupLastWriteTime -ne $offSiteBackUpsAllISOsObj[$($ISO)])) {
+                if (($ISO -notin $offSiteBackUpsAllISOs) -or ($currISOToBackupLastWriteTime -ne $offSiteBackUpsAllISOsObj[$($ISO)])) {
                     LogWrite "Copying ISO <$($ISO)> to E:\Files\ISOs" "Green"
                     Copy-Item -Path "T:\Files\ISOs\$($ISO)" -Destination "E:\Files\ISOs" -Recurse -Force -Container
                     #Copy-Item -Path "T:\Files\ISOs\$($ISO)" -Destination "C:\DevStuff\Data\E" -Recurse -Force -Container
