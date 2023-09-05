@@ -15,10 +15,10 @@ function LogWrite {
 # $headers.Add("Content-Type", "application/json")
 # $headers.Add("X-Auth-Email", "v***@gmail.com")
 # $headers.Add("X-Auth-Key", "global_api_key")
-# $response = Invoke-RestMethod -Uri 'https://api.cloudflare.com/client/v4/zones/####/dns_records' -Method GET -Headers $headers
+# $response = Invoke-RestMethod -Uri 'https://api.cloudflare.com/client/v4/zones/###/dns_records' -Method GET -Headers $headers
 # Write-Host $response.result
-# ############################ --> global API key
-# ############################ --> Edit dns zone settings, dont think this is used for this API call
+# ### --> global API key
+# ### --> Edit dns zone settings, dont think this is used for this API call
 function updateCFIP() {
     [CmdletBinding()]
     Param(
@@ -26,16 +26,16 @@ function updateCFIP() {
         [string]$newIP
     )
     $subDomains = @{
-        'grafana.varunmaster.com'   = '####';
-        'inventory.varunmaster.com' = '####';
-        'plex.varunmaster.com'      = '####';
-        '@'                         = '####';
-        #'test.varunmaster.com'     = '####';
+        'grafana.varunmaster.com'   = '###';
+        'inventory.varunmaster.com' = '###';
+        'plex.varunmaster.com'      = '###';
+        '@'                         = '###';
+        #'test.varunmaster.com'     = '###';
     }
     $headers = @{}
     $headers.Add("Content-Type", "application/json")
     $headers.Add("X-Auth-Email", "v***@gmail.com")
-    $headers.Add("X-Auth-Key", "####")
+    $headers.Add("X-Auth-Key", "###")
     foreach ($subDomain in $subDomains.GetEnumerator()) {
         $body = @{
             'content' = "$newIP";
@@ -46,7 +46,7 @@ function updateCFIP() {
             'ttl'     = '1';
         } | ConvertTo-Json
         LogWrite -logString "Going to update the IP for subdomain $($subDomain.Name) with new value of $($newIP)"
-        $response = Invoke-WebRequest -Uri "https://api.cloudflare.com/client/v4/zones/####/dns_records/$($subDomain.Value)" -Method PUT -Headers $headers -ContentType 'application/json' -Body $body
+        $response = Invoke-WebRequest -Uri "https://api.cloudflare.com/client/v4/zones/###/dns_records/$($subDomain.Value)" -Method PUT -Headers $headers -ContentType 'application/json' -Body $body
         if ($response.StatusCode -ne 200) {
             LogWrite -logString "-----------------Error with API from CloudFlare-----------------"
             LogWrite -logString "Failure...response from CloudFlare API: $($Error[0])"
