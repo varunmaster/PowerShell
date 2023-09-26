@@ -13,8 +13,10 @@ function LogWrite {
 # a quick Get method to get current subdomains
 # $headers = @{}
 # $headers.Add("Content-Type", "application/json")
+# $headers.Add("X-Auth-Email", "###")
 # $headers.Add("X-Auth-Email", "v***@gmail.com")
 # $headers.Add("X-Auth-Key", "global_api_key")
+# [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 # $response = Invoke-RestMethod -Uri 'https://api.cloudflare.com/client/v4/zones/###/dns_records' -Method GET -Headers $headers
 # Write-Host $response.result
 # ### --> global API key
@@ -25,28 +27,58 @@ function updateCFIP() {
         [Parameter(Mandatory = $True, HelpMessage = "The new IP for all the DNS entries in the zone")]
         [string]$newIP
     )
-    $subDomains = @{
-        'grafana.varunmaster.com'   = '###';
-        'inventory.varunmaster.com' = '###';
-        'plex.varunmaster.com'      = '###';
-        '@'                         = '###';
-        #'test.varunmaster.com'     = '###';
-    }
+    # $subDomains = @{
+    #     'grafana.varunmaster.com'   = '###';
+    #     'inventory.varunmaster.com' = '###';
+    #     'plex.varunmaster.com'      = '###';
+    #     '@'                         = '###';
+    #     'www.varunmaster.com'       = '###';
+    #     #'test.varunmaster.com' = '###';
+    # }
+    $subDomains = @(
+        @{
+            Name    = '###'; 
+            id      = '###'; 
+            type    = 'A'
+        },
+        @{
+            Name    = '###';
+            id      = '###';
+            type    = 'A'
+        },
+        @{
+            Name    = '###';
+            id      = '###';
+            type    = 'A'
+        },
+        @{
+            Name    = '@';
+            id      = '###';
+            type    = 'A'
+        }# ,
+        # @{
+        #     Name    = '###';
+        #     id      = '###';
+        #     type    = 'CNAME'
+        # }
+    )
     $headers = @{}
     $headers.Add("Content-Type", "application/json")
-    $headers.Add("X-Auth-Email", "v***@gmail.com")
+    $headers.Add("X-Auth-Email", "###")
     $headers.Add("X-Auth-Key", "###")
-    foreach ($subDomain in $subDomains.GetEnumerator()) {
+    foreach ($subDomain in $subDomains) {
         $body = @{
             'content' = "$newIP";
-            'name'    = "$($subDomain.Name)";
+            'name'    = $subDomain.Name;
             'proxied' = $True;
-            'type'    = 'A';
-            'comment' = "Updated from script";
+            'type'    = $subDomain.type;
+            'comment' = "Updated from script " + (Get-Date).toString('yyyy/MM/dd HH:mm:ss') + " EST";
             'ttl'     = '1';
         } | ConvertTo-Json
-        LogWrite -logString "Going to update the IP for subdomain $($subDomain.Name) with new value of $($newIP)"
-        $response = Invoke-WebRequest -Uri "https://api.cloudflare.com/client/v4/zones/###/dns_records/$($subDomain.Value)" -Method PUT -Headers $headers -ContentType 'application/json' -Body $body
+        LogWrite -logString "Going to update the IP for subdomain $($subDomain.Name) of type $($subDomain.type) with new IP of $($newIP)"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        # https://developers.cloudflare.com/api/operations/dns-records-for-a-zone-update-dns-record
+        $response = Invoke-WebRequest -Uri "https://api.cloudflare.com/client/v4/zones/###/dns_records/$($subDomain.id)" -Method PUT -Headers $headers -ContentType 'application/json' -Body $body
         if ($response.StatusCode -ne 200) {
             LogWrite -logString "-----------------Error with API from CloudFlare-----------------"
             LogWrite -logString "Failure...response from CloudFlare API: $($Error[0])"
