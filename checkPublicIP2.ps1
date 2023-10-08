@@ -30,7 +30,7 @@ function updateCFIP() {
     # $subDomains = @{
     #     'grafana.varunmaster.com'   = '###';
     #     'inventory.varunmaster.com' = '###';
-    #     'plex.varunmaster.com'      = '###';
+    #     'subA.varunmaster.com'      = '###';
     #     '@'                         = '###';
     #     'www.varunmaster.com'       = '###';
     #     #'test.varunmaster.com' = '###';
